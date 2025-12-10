@@ -16,7 +16,7 @@ public class EventFile
     public string FilePath { get; set; }
 
     [Required]
-    [MaxLenght(255)]
+    [MaxLength(255)]
     public string FileName { get; set; }
 
     [Required]

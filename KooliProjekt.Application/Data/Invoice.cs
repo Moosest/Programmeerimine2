@@ -8,25 +8,25 @@ public class invoice
     [Key]
     public int Id { get; set; }
 
-    [Require]
+    [Required]
     public int RegistrationId { get; set; }
 
-    [Require]
+    [Required]
     [MaxLength(50)]
     public string InvoiceNumber { get; set; }
 
-    [Require]
+    [Required]
     public decimal Amount { get; set; }
 
-    [Require]
-    public TimeDate IssueDate  { get; set; }
+    [Required]
+    public DateTime IssueDate  { get; set; }
 
-    [Require]
-    public TimeDate DueDate { get; set; }
+    [Required]
+    public DateTime DueDate { get; set; }
 
-    [Require]
+    [Required]
     public string Status { get; set; }
 
-    [Require]
+    [Required]
     public string PdfUrl { get; set; }
 }

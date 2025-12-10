@@ -12,7 +12,7 @@ public class EventSchedule
     public int EventId { get; set; }
 
     [Required]
-    public TimeDate StartTime { get; set; }
+    public DateTime StartTime { get; set; }
 
     [Required]
     [MaxLength(500)]

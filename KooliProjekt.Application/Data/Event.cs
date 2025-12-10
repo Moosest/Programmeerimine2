@@ -20,7 +20,7 @@ public class Event
     public string Description { get; set; }
 
     [Required]
-    [MaxLenght(255)]
+    [MaxLength(255)]
     public string Location { get; set; }
 
     [Required]
@@ -33,5 +33,5 @@ public class Event
     public string Summary { get; set; }
 
     [Required]
-    public boolean IsActive { get; set; }
+    public bool IsActive { get; set; }
 }

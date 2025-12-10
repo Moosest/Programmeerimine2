@@ -21,5 +21,5 @@ public class SystemUser
     public string Role { get; set; }
 
     [Required]
-    public TimeDate CreatedAt { get; set; }
+    public DateTime CreatedAt { get; set; }
 }

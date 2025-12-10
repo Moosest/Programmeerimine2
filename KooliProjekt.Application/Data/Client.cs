@@ -21,8 +21,16 @@ public class Client
     public string Email { get; set; }
 
     [Required]
-    [MaxLength(20)]
+    [MaxLength(15)]
     public string Phone { get; set; }
+
+    [Required]
+    [MaxLength(255)]
+    public string Address { get; set; }
+
+    [Required]
+    [Range(0.0, 0.9)]
+    public decimal Discount { get; set; }
 
     [Required]
     [MaxLength(150)]

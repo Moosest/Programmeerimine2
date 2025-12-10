@@ -8,23 +8,23 @@ public class Payment
     [Key]
     public int Id { get; set; }
 
-    [Require]
+    [Required]
     public int InvoiceId { get; set; }
 
-    [Require]
+    [Required]
     public decimal Amount { get; set; }
 
-    [Require]
-    public TimeDate PaymentDate { get; set; }
+    [Required]
+    public DateTime PaymentDate { get; set; }
 
-    [Require]
+    [Required]
     [MaxLength(50)]
     public string Method { get; set; }
 
-    [Require]
-    [MaxLenght(50)]
+    [Required]
+    [MaxLength(50)]
     public string TransactionRef { get; set; }
 
-    [Require]
+    [Required]
     public int ModifiedBy { get; set; }
 }
