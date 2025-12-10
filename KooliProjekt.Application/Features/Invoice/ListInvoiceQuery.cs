@@ -5,7 +5,9 @@ using MediatR;
 
 namespace KooliProjekt.Application.Features.Invoices
 {
-    public class ListInvoicesQuery : IRequest<OperationResult<IList<Invoice>>>
+    public class ListInvoicesQuery : IRequest<OperationResult<PagedResult<Invoice>>>
     {
+        public int Page { get; set; }
+        public int PageSize { get; set; }
     }
 }

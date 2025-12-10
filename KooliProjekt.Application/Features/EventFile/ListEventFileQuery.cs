@@ -5,7 +5,9 @@ using MediatR;
 
 namespace KooliProjekt.Application.Features.EventFiles
 {
-    public class ListEventFilesQuery : IRequest<OperationResult<IList<EventFile>>>
+    public class ListEventFilesQuery : IRequest<OperationResult<PagedResult<EventFile>>>
     {
+        public int Page { get; set; }
+        public int PageSize { get; set; }
     }
 }

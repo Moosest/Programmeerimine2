@@ -5,7 +5,9 @@ using MediatR;
 
 namespace KooliProjekt.Application.Features.EventSchedules
 {
-    public class ListEventSchedulesQuery : IRequest<OperationResult<IList<EventSchedule>>>
+    public class ListEventSchedulesQuery : IRequest<OperationResult<PagedResult<EventSchedule>>>
     {
+        public int Page { get; set; }
+        public int PageSize { get; set; }
     }
 }

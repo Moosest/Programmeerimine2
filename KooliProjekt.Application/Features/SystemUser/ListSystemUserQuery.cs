@@ -5,7 +5,9 @@ using MediatR;
 
 namespace KooliProjekt.Application.Features.SystemUsers
 {
-    public class ListSystemUsersQuery : IRequest<OperationResult<IList<SystemUser>>>
+    public class ListSystemUsersQuery : IRequest<OperationResult<PagedResult<SystemUser>>>
     {
+        public int Page { get; set; }
+        public int PageSize { get; set; }
     }
 }

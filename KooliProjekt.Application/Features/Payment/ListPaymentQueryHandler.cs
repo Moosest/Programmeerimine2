@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using KooliProjekt.Application.Data;
@@ -12,21 +11,23 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KooliProjekt.Application.Features.Payments
 {
-    public class ListPaymentsQueryHandler : IRequestHandler<ListPaymentsQuery, OperationResult<IList<Payment>>>
+    public class ListPaymentsQueryHandler : IRequestHandler<ListPaymentsQuery, OperationResult<PagedResult<ToDoList>>>
     {
         private readonly ApplicationDbContext _dbContext;
+
         public ListPaymentsQueryHandler(ApplicationDbContext dbContext)
         {
             _dbContext = dbContext;
         }
 
-        public async Task<OperationResult<IList<Payment>>> Handle(ListPaymentsQuery request, CancellationToken cancellationToken)
+        public async Task<OperationResult<PagedResult<ToDoList>>> Handle(ListPaymentsQuery request, CancellationToken cancellationToken)
         {
-            var result = new OperationResult<IList<Payment>>();
+            var result = new OperationResult<PagedResult<ToDoList>>();
+
             result.Value = await _dbContext
                 .Payments
-                .OrderBy(list => list.Name)
-                .ToListAsync();
+                .OrderBy(list => list.Title)
+                .GetPagedAsync(request.Page, request.PageSize);
 
             return result;
         }
