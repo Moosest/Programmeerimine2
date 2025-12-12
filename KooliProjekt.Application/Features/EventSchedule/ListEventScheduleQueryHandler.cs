@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KooliProjekt.Application.Features.EventSchedules
 {
-    public class ListEventSchedulesQueryHandler : IRequestHandler<ListEventSchedulesQuery, OperationResult<PagedResult<ToDoList>>>
+    public class ListEventSchedulesQueryHandler : IRequestHandler<ListEventSchedulesQuery, OperationResult<PagedResult<EventSchedule>>>
     {
         private readonly ApplicationDbContext _dbContext;
 
@@ -20,13 +20,13 @@ namespace KooliProjekt.Application.Features.EventSchedules
             _dbContext = dbContext;
         }
 
-        public async Task<OperationResult<PagedResult<ToDoList>>> Handle(ListEventSchedulesQuery request, CancellationToken cancellationToken)
+        public async Task<OperationResult<PagedResult<EventSchedule>>> Handle(ListEventSchedulesQuery request, CancellationToken cancellationToken)
         {
-            var result = new OperationResult<PagedResult<ToDoList>>();
+            var result = new OperationResult<PagedResult<EventSchedule>>();
 
             result.Value = await _dbContext
                 .EventSchedules
-                .OrderBy(list => list.Title)
+                .OrderBy(es => es.StartTime)
                 .GetPagedAsync(request.Page, request.PageSize);
 
             return result;

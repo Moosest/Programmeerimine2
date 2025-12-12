@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KooliProjekt.Application.Features.Clients
 {
-    public class ListClientsQueryHandler : IRequestHandler<ListClientsQuery, OperationResult<PagedResult<ToDoList>>>
+    public class ListClientsQueryHandler : IRequestHandler<ListClientsQuery, OperationResult<PagedResult<Client>>>
     {
         private readonly ApplicationDbContext _dbContext;
 
@@ -20,13 +20,13 @@ namespace KooliProjekt.Application.Features.Clients
             _dbContext = dbContext;
         }
 
-        public async Task<OperationResult<PagedResult<ToDoList>>> Handle(ListClientsQuery request, CancellationToken cancellationToken)
+        public async Task<OperationResult<PagedResult<Client>>> Handle(ListClientsQuery request, CancellationToken cancellationToken)
         {
-            var result = new OperationResult<PagedResult<ToDoList>>();
+            var result = new OperationResult<PagedResult<Client>>();
 
             result.Value = await _dbContext
                 .Clients
-                .OrderBy(list => list.Title)
+                .OrderBy(c => c.Name)
                 .GetPagedAsync(request.Page, request.PageSize);
 
             return result;

@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KooliProjekt.Application.Features.Payments
 {
-    public class ListPaymentsQueryHandler : IRequestHandler<ListPaymentsQuery, OperationResult<PagedResult<ToDoList>>>
+    public class ListPaymentsQueryHandler : IRequestHandler<ListPaymentsQuery, OperationResult<PagedResult<Payment>>>
     {
         private readonly ApplicationDbContext _dbContext;
 
@@ -20,13 +20,13 @@ namespace KooliProjekt.Application.Features.Payments
             _dbContext = dbContext;
         }
 
-        public async Task<OperationResult<PagedResult<ToDoList>>> Handle(ListPaymentsQuery request, CancellationToken cancellationToken)
+        public async Task<OperationResult<PagedResult<Payment>>> Handle(ListPaymentsQuery request, CancellationToken cancellationToken)
         {
-            var result = new OperationResult<PagedResult<ToDoList>>();
+            var result = new OperationResult<PagedResult<Payment>>();
 
             result.Value = await _dbContext
                 .Payments
-                .OrderBy(list => list.Title)
+                .OrderBy(p => p.PaymentDate)
                 .GetPagedAsync(request.Page, request.PageSize);
 
             return result;

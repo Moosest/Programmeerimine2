@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KooliProjekt.Application.Features.EventFiles
 {
-    public class ListEventFilesQueryHandler : IRequestHandler<ListEventFilesQuery, OperationResult<PagedResult<ToDoList>>>
+    public class ListEventFilesQueryHandler : IRequestHandler<ListEventFilesQuery, OperationResult<PagedResult<EventFile>>>
     {
         private readonly ApplicationDbContext _dbContext;
 
@@ -20,13 +20,13 @@ namespace KooliProjekt.Application.Features.EventFiles
             _dbContext = dbContext;
         }
 
-        public async Task<OperationResult<PagedResult<ToDoList>>> Handle(ListEventFilesQuery request, CancellationToken cancellationToken)
+        public async Task<OperationResult<PagedResult<EventFile>>> Handle(ListEventFilesQuery request, CancellationToken cancellationToken)
         {
-            var result = new OperationResult<PagedResult<ToDoList>>();
+            var result = new OperationResult<PagedResult<EventFile>>();
 
             result.Value = await _dbContext
                 .EventFiles
-                .OrderBy(list => list.Title)
+                .OrderBy(ef => ef.FileName)
                 .GetPagedAsync(request.Page, request.PageSize);
 
             return result;

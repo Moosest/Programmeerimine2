@@ -10,11 +10,7 @@ public class Client
 
     [Required]
     [MaxLength(100)]
-    public string FirstName { get; set; }
-
-    [Required]
-    [MaxLength(100)]
-    public string LastName { get; set; }
+    public string Name { get; set; }
 
     [Required]
     [MaxLength(150)]
@@ -31,8 +27,4 @@ public class Client
     [Required]
     [Range(0.0, 0.9)]
     public decimal Discount { get; set; }
-
-    [Required]
-    [MaxLength(150)]
-    public string CompanyName { get; set; }
 }

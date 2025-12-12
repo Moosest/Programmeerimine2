@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KooliProjekt.Application.Features.SystemUsers
 {
-    public class ListSystemUsersQueryHandler : IRequestHandler<ListSystemUsersQuery, OperationResult<PagedResult<ToDoList>>>
+    public class ListSystemUsersQueryHandler : IRequestHandler<ListSystemUsersQuery, OperationResult<PagedResult<SystemUser>>>
     {
         private readonly ApplicationDbContext _dbContext;
 
@@ -20,13 +20,13 @@ namespace KooliProjekt.Application.Features.SystemUsers
             _dbContext = dbContext;
         }
 
-        public async Task<OperationResult<PagedResult<ToDoList>>> Handle(ListSystemUsersQuery request, CancellationToken cancellationToken)
+        public async Task<OperationResult<PagedResult<SystemUser>>> Handle(ListSystemUsersQuery request, CancellationToken cancellationToken)
         {
-            var result = new OperationResult<PagedResult<ToDoList>>();
+            var result = new OperationResult<PagedResult<SystemUser>>();
 
             result.Value = await _dbContext
                 .SystemUsers
-                .OrderBy(list => list.Title)
+                .OrderBy(su => su.Username)
                 .GetPagedAsync(request.Page, request.PageSize);
 
             return result;
