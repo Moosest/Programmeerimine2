@@ -22,5 +22,22 @@ namespace KooliProjekt.WebAPI.Controllers
 
             return Result(response);
         }
+
+        [HttpGet]
+        [Route("Get")]
+        public async Task<IActionResult> Get(int id)
+        {
+            var query = new GetEventFileQuery { Id = id };
+            var response = await _mediator.Send(query);
+            return Result(response);
+        }
+
+        [HttpPost]
+        [Route("Save")]
+        public async Task<IActionResult> Save(SaveEventFileCommand command)
+        {
+            var response = await _mediator.Send(command);
+            return Result(response);
+        }
     }
 }
