@@ -21,7 +21,7 @@ namespace KooliProjekt.WebAPI
             // Add services to the container.
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
             {
-                options.UseSqlServer(connectionString);
+                options.UseNpgsql(connectionString);
             });
 
             builder.Services.AddControllers();
@@ -52,6 +52,17 @@ namespace KooliProjekt.WebAPI
 
 
             app.MapControllers();
+
+            // Andmebaasi migratsioon ja testandmete genereerimine
+            using(var scope = app.Services.CreateScope())
+            using(var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>())
+            {
+                dbContext.Database.Migrate();
+#if(DEBUG)
+                var generator = new SeedData(dbContext);
+                generator.Generate();
+#endif
+            }
 
             app.Run();
         }

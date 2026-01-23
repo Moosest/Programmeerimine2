@@ -9,7 +9,7 @@ namespace KooliProjekt.Application.Data
         {
             var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
 
-            optionsBuilder.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=DesignTimePlaceholder;Trusted_Connection=True;MultipleActiveResultSets=true");
+            optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=KooliProjekt;Username=pots;Password=8008135");
 
             return new ApplicationDbContext(optionsBuilder.Options);
         }

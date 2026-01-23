@@ -39,5 +39,13 @@ namespace KooliProjekt.WebAPI.Controllers
             var response = await _mediator.Send(command);
             return Result(response);
         }
+
+        [HttpDelete]
+        [Route("Delete")]
+        public async Task<IActionResult> Delete(DeleteInvoiceCommand command)
+        {
+            var response = await _mediator.Send(command);
+            return Result(response);
+        }
     }
 }
