@@ -4,7 +4,9 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 
-public class Event
+using KooliProjekt.Application.Data;
+
+public class Event : Entity
 {
     [Key]
     public int Id { get; set; }

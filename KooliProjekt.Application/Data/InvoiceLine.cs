@@ -1,7 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-public class InvoiceLine
+using KooliProjekt.Application.Data;
+
+public class InvoiceLine : Entity
 {
     [Key]
     public int Id { get; set; }

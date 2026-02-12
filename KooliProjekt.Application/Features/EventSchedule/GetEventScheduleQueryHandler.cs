@@ -1,30 +1,28 @@
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using KooliProjekt.Application.Data;
+using KooliProjekt.Application.Data.Repositories;
 using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace KooliProjekt.Application.Features.EventSchedules
 {
     public class GetEventScheduleQueryHandler : IRequestHandler<GetEventScheduleQuery, OperationResult<object>>
     {
-        private readonly ApplicationDbContext _dbContext;
+        private readonly IEventScheduleRepository _eventScheduleRepository;
 
-        public GetEventScheduleQueryHandler(ApplicationDbContext dbContext)
+        public GetEventScheduleQueryHandler(IEventScheduleRepository eventScheduleRepository)
         {
-            _dbContext = dbContext;
+            _eventScheduleRepository = eventScheduleRepository;
         }
 
         public async Task<OperationResult<object>> Handle(GetEventScheduleQuery request, CancellationToken cancellationToken)
         {
             var result = new OperationResult<object>();
 
-            result.Value = await _dbContext
-                .EventSchedules
-                .Where(eventSchedule => eventSchedule.Id == request.Id)
-                .Select(eventSchedule => new
+            var eventSchedule = await _eventScheduleRepository.GetByIdAsync(request.Id);
+            if (eventSchedule != null)
+            {
+                result.Value = new
                 {
                     eventSchedule.Id,
                     eventSchedule.EventId,
@@ -32,8 +30,12 @@ namespace KooliProjekt.Application.Features.EventSchedules
                     eventSchedule.FilePath,
                     eventSchedule.FileName,
                     eventSchedule.UploadedAt
-                })
-                .FirstOrDefaultAsync(cancellationToken);
+                };
+            }
+            else
+            {
+                result.Value = null;
+            }
 
             return result;
         }

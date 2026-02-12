@@ -1,38 +1,40 @@
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using KooliProjekt.Application.Data;
+using KooliProjekt.Application.Data.Repositories;
 using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace KooliProjekt.Application.Features.SystemUsers
 {
     public class GetSystemUserQueryHandler : IRequestHandler<GetSystemUserQuery, OperationResult<object>>
     {
-        private readonly ApplicationDbContext _dbContext;
+        private readonly ISystemUserRepository _systemUserRepository;
 
-        public GetSystemUserQueryHandler(ApplicationDbContext dbContext)
+        public GetSystemUserQueryHandler(ISystemUserRepository systemUserRepository)
         {
-            _dbContext = dbContext;
+            _systemUserRepository = systemUserRepository;
         }
 
         public async Task<OperationResult<object>> Handle(GetSystemUserQuery request, CancellationToken cancellationToken)
         {
             var result = new OperationResult<object>();
 
-            result.Value = await _dbContext
-                .SystemUsers
-                .Where(systemUser => systemUser.Id == request.Id)
-                .Select(systemUser => new
+            var systemUser = await _systemUserRepository.GetByIdAsync(request.Id);
+            if (systemUser != null)
+            {
+                result.Value = new
                 {
                     systemUser.Id,
                     systemUser.Username,
                     systemUser.PasswordHash,
                     systemUser.Role,
                     systemUser.CreatedAt
-                })
-                .FirstOrDefaultAsync(cancellationToken);
+                };
+            }
+            else
+            {
+                result.Value = null;
+            }
 
             return result;
         }

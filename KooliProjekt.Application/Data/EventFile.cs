@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-public class EventFile
+using KooliProjekt.Application.Data;
+
+public class EventFile : Entity
 {
     [Key]
     public int Id { get; set; }

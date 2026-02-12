@@ -1,30 +1,28 @@
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using KooliProjekt.Application.Data;
+using KooliProjekt.Application.Data.Repositories;
 using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace KooliProjekt.Application.Features.Payments
 {
     public class GetPaymentQueryHandler : IRequestHandler<GetPaymentQuery, OperationResult<object>>
     {
-        private readonly ApplicationDbContext _dbContext;
+        private readonly IPaymentRepository _paymentRepository;
 
-        public GetPaymentQueryHandler(ApplicationDbContext dbContext)
+        public GetPaymentQueryHandler(IPaymentRepository paymentRepository)
         {
-            _dbContext = dbContext;
+            _paymentRepository = paymentRepository;
         }
 
         public async Task<OperationResult<object>> Handle(GetPaymentQuery request, CancellationToken cancellationToken)
         {
             var result = new OperationResult<object>();
 
-            result.Value = await _dbContext
-                .Payments
-                .Where(payment => payment.Id == request.Id)
-                .Select(payment => new
+            var payment = await _paymentRepository.GetByIdAsync(request.Id);
+            if (payment != null)
+            {
+                result.Value = new
                 {
                     payment.Id,
                     payment.InvoiceId,
@@ -33,8 +31,12 @@ namespace KooliProjekt.Application.Features.Payments
                     payment.Method,
                     payment.TransactionRef,
                     payment.ModifiedBy
-                })
-                .FirstOrDefaultAsync(cancellationToken);
+                };
+            }
+            else
+            {
+                result.Value = null;
+            }
 
             return result;
         }

@@ -1,30 +1,28 @@
-using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using KooliProjekt.Application.Data;
+using KooliProjekt.Application.Data.Repositories;
 using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
+
 namespace KooliProjekt.Application.Features.Clients
 {
     public class GetClientsQueryHandler : IRequestHandler<GetClientsQuery, OperationResult<object>>
     {
-        private readonly ApplicationDbContext _dbContext;
+        private readonly IClientRepository _clientRepository;
 
-        public GetClientsQueryHandler(ApplicationDbContext dbContext)
+        public GetClientsQueryHandler(IClientRepository clientRepository)
         {
-            _dbContext = dbContext;
+            _clientRepository = clientRepository;
         }
 
         public async Task<OperationResult<object>> Handle(GetClientsQuery request, CancellationToken cancellationToken)
         {
             var result = new OperationResult<object>();
 
-            result.Value = await _dbContext
-                .Clients
-                .Where(client => client.Id == request.Id)
-                .Select(client => new
+            var client = await _clientRepository.GetByIdAsync(request.Id);
+            if (client != null)
+            {
+                result.Value = new
                 {
                     client.Id,
                     client.Name,
@@ -32,8 +30,12 @@ namespace KooliProjekt.Application.Features.Clients
                     client.Phone,
                     client.Address,
                     client.Discount
-                })
-                .FirstOrDefaultAsync(cancellationToken);
+                };
+            }
+            else
+            {
+                result.Value = null;
+            }
 
             return result;
         }

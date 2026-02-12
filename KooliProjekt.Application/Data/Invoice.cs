@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-public class Invoice
+using KooliProjekt.Application.Data;
+
+public class Invoice : Entity
 {
     [Key]
     public int Id { get; set; }
@@ -14,6 +16,8 @@ public class Invoice
 
     [Required]
     public DateTime InvoiceDate { get; set; }
+
+    
 
     [Required]
     public DateTime DueDate { get; set; }

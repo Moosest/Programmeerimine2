@@ -1,38 +1,40 @@
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using KooliProjekt.Application.Data;
+using KooliProjekt.Application.Data.Repositories;
 using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace KooliProjekt.Application.Features.EventFiles
 {
     public class GetEventFileQueryHandler : IRequestHandler<GetEventFileQuery, OperationResult<object>>
     {
-        private readonly ApplicationDbContext _dbContext;
+        private readonly IEventFileRepository _eventFileRepository;
 
-        public GetEventFileQueryHandler(ApplicationDbContext dbContext)
+        public GetEventFileQueryHandler(IEventFileRepository eventFileRepository)
         {
-            _dbContext = dbContext;
+            _eventFileRepository = eventFileRepository;
         }
 
         public async Task<OperationResult<object>> Handle(GetEventFileQuery request, CancellationToken cancellationToken)
         {
             var result = new OperationResult<object>();
 
-            result.Value = await _dbContext
-                .EventFiles
-                .Where(eventFile => eventFile.Id == request.Id)
-                .Select(eventFile => new
+            var eventFile = await _eventFileRepository.GetByIdAsync(request.Id);
+            if (eventFile != null)
+            {
+                result.Value = new
                 {
                     eventFile.Id,
                     eventFile.EventId,
                     eventFile.FilePath,
                     eventFile.FileName,
                     eventFile.UploadedAt
-                })
-                .FirstOrDefaultAsync(cancellationToken);
+                };
+            }
+            else
+            {
+                result.Value = null;
+            }
 
             return result;
         }

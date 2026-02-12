@@ -25,6 +25,16 @@ namespace KooliProjekt.WebAPI
             });
 
             builder.Services.AddControllers();
+
+            // Repository-teenuste registreerimine
+            builder.Services.AddScoped<KooliProjekt.Application.Data.Repositories.IClientRepository, KooliProjekt.Application.Data.Repositories.ClientRepository>();
+            builder.Services.AddScoped<KooliProjekt.Application.Data.Repositories.IEventRepository, KooliProjekt.Application.Data.Repositories.EventRepository>();
+            builder.Services.AddScoped<KooliProjekt.Application.Data.Repositories.IEventFileRepository, KooliProjekt.Application.Data.Repositories.EventFileRepository>();
+            builder.Services.AddScoped<KooliProjekt.Application.Data.Repositories.IEventScheduleRepository, KooliProjekt.Application.Data.Repositories.EventScheduleRepository>();
+            builder.Services.AddScoped<KooliProjekt.Application.Data.Repositories.IInvoiceRepository, KooliProjekt.Application.Data.Repositories.InvoiceRepository>();
+            builder.Services.AddScoped<KooliProjekt.Application.Data.Repositories.IInvoiceLineRepository, KooliProjekt.Application.Data.Repositories.InvoiceLineRepository>();
+            builder.Services.AddScoped<KooliProjekt.Application.Data.Repositories.IPaymentRepository, KooliProjekt.Application.Data.Repositories.PaymentRepository>();
+            builder.Services.AddScoped<KooliProjekt.Application.Data.Repositories.ISystemUserRepository, KooliProjekt.Application.Data.Repositories.SystemUserRepository>();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();

@@ -1,42 +1,43 @@
-using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using KooliProjekt.Application.Data;
+using KooliProjekt.Application.Data.Repositories;
 using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace KooliProjekt.Application.Features.Events
 {
     public class GetEventQueryHandler : IRequestHandler<GetEventQuery, OperationResult<object>>
     {
-        private readonly ApplicationDbContext _dbContext;
+        private readonly IEventRepository _eventRepository;
 
-        public GetEventQueryHandler(ApplicationDbContext dbContext)
+        public GetEventQueryHandler(IEventRepository eventRepository)
         {
-            _dbContext = dbContext;
+            _eventRepository = eventRepository;
         }
 
         public async Task<OperationResult<object>> Handle(GetEventQuery request, CancellationToken cancellationToken)
         {
             var result = new OperationResult<object>();
 
-            result.Value = await _dbContext
-                .Events
-                .Where(e => e.Id == request.Id)
-                .Select(e => new
+            var e = await _eventRepository.GetByIdAsync(request.Id);
+            if (e != null)
+            {
+                result.Value = new
                 {
-                   e.Id,
-                   e.StartTime,
-                   e.Description,
-                   e.Location,
-                   e.MaxSeats,
-                   e.Price,
-                   e.Summary,
-                   e.IsActive,
-                })
-                .FirstOrDefaultAsync();
+                    e.Id,
+                    e.StartTime,
+                    e.Description,
+                    e.Location,
+                    e.MaxSeats,
+                    e.Price,
+                    e.Summary,
+                    e.IsActive
+                };
+            }
+            else
+            {
+                result.Value = null;
+            }
 
             return result;
         }

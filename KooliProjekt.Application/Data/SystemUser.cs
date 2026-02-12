@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-public class SystemUser 
+using KooliProjekt.Application.Data;
+
+public class SystemUser : Entity
 {
     [Key]
     public int Id { get; set; }

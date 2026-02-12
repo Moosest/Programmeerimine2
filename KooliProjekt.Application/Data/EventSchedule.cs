@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-public class EventSchedule
+using KooliProjekt.Application.Data;
+
+public class EventSchedule : Entity
 {
     [Key]
     public int Id { get; set; }
