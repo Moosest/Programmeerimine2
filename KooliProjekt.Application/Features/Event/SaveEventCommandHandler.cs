@@ -1,12 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Cache;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using KooliProjekt.Application.Data;
-using KooliProjekt.Application.Infrastructure.Paging;
+using KooliProjekt.Application.Data.Repositories;
 using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
 
@@ -14,11 +9,11 @@ namespace KooliProjekt.Application.Features.Events
 {
     public class SaveEventCommandHandler : IRequestHandler<SaveEventCommand, OperationResult>
     {
-        private readonly ApplicationDbContext _dbContext;
+        private readonly IEventRepository _eventRepository;
 
-        public SaveEventCommandHandler(ApplicationDbContext dbContext)
+        public SaveEventCommandHandler(IEventRepository eventRepository)
         {
-            _dbContext = dbContext;
+            _eventRepository = eventRepository;
         }
 
         public async Task<OperationResult> Handle(SaveEventCommand request, CancellationToken cancellationToken)
@@ -26,17 +21,12 @@ namespace KooliProjekt.Application.Features.Events
             var result = new OperationResult();
 
             var list = new Event();
-            if (request.Id == 0)
+            if (request.Id != 0)
             {
-                await _dbContext.Events.AddAsync(list);
-            }
-            else
-            {
-                list = await _dbContext.Events.FindAsync(request.Id);
-                //_dbContext.ToDoLists.Update(list);
+                list = await _eventRepository.GetByIdAsync(request.Id);
             }
 
-            list.Name = request . Name;
+            list.Name = request.Name;
             list.StartTime = request.StartTime;
             list.Description = request.Description;
             list.Location = request.Location;
@@ -45,7 +35,7 @@ namespace KooliProjekt.Application.Features.Events
             list.Summary = request.Summary;
             list.IsActive = request.IsActive;
 
-            await _dbContext.SaveChangesAsync();
+            await _eventRepository.SaveAsync(list);
 
             return result;
         }

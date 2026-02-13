@@ -1,26 +1,30 @@
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using KooliProjekt.Application.Data;
+using KooliProjekt.Application.Data.Repositories;
 using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace KooliProjekt.Application.Features.SystemUsers
 {
     public class DeleteSystemUserCommandHandler : IRequestHandler<DeleteSystemUserCommand, OperationResult>
     {
-        private readonly ApplicationDbContext _dbContext;
+        private readonly ISystemUserRepository _systemUserRepository;
 
-        public DeleteSystemUserCommandHandler(ApplicationDbContext dbContext)
+        public DeleteSystemUserCommandHandler(ISystemUserRepository systemUserRepository)
         {
-            _dbContext = dbContext;
+            _systemUserRepository = systemUserRepository;
         }
 
         public async Task<OperationResult> Handle(DeleteSystemUserCommand request, CancellationToken cancellationToken)
         {
             var result = new OperationResult();
-            await _dbContext.SystemUsers.Where(u => u.Id == request.Id).ExecuteDeleteAsync(cancellationToken);
+
+            var entity = await _systemUserRepository.GetByIdAsync(request.Id);
+            if (entity != null)
+            {
+                await _systemUserRepository.DeleteAsync(entity);
+            }
+
             return result;
         }
     }

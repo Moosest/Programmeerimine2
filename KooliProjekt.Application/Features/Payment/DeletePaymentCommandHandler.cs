@@ -1,26 +1,30 @@
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using KooliProjekt.Application.Data;
+using KooliProjekt.Application.Data.Repositories;
 using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace KooliProjekt.Application.Features.Payments
 {
     public class DeletePaymentCommandHandler : IRequestHandler<DeletePaymentCommand, OperationResult>
     {
-        private readonly ApplicationDbContext _dbContext;
+        private readonly IPaymentRepository _paymentRepository;
 
-        public DeletePaymentCommandHandler(ApplicationDbContext dbContext)
+        public DeletePaymentCommandHandler(IPaymentRepository paymentRepository)
         {
-            _dbContext = dbContext;
+            _paymentRepository = paymentRepository;
         }
 
         public async Task<OperationResult> Handle(DeletePaymentCommand request, CancellationToken cancellationToken)
         {
             var result = new OperationResult();
-            await _dbContext.Payments.Where(p => p.Id == request.Id).ExecuteDeleteAsync(cancellationToken);
+
+            var entity = await _paymentRepository.GetByIdAsync(request.Id);
+            if (entity != null)
+            {
+                await _paymentRepository.DeleteAsync(entity);
+            }
+
             return result;
         }
     }

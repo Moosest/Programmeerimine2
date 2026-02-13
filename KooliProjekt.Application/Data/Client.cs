@@ -7,9 +7,6 @@ using KooliProjekt.Application.Data;
 
 public class Client : Entity
 {
-    [Key]
-    public int Id { get; set; }
-
     [Required]
     [MaxLength(100)]
     public string Name { get; set; }

@@ -7,9 +7,6 @@ using KooliProjekt.Application.Data;
 
 public class Payment : Entity
 {
-    [Key]
-    public int Id { get; set; }
-
     [Required]
     public int InvoiceId { get; set; }
 

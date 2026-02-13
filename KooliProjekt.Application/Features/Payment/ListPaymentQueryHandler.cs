@@ -1,33 +1,27 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using KooliProjekt.Application.Data;
+using KooliProjekt.Application.Data.Repositories;
 using KooliProjekt.Application.Infrastructure.Paging;
 using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace KooliProjekt.Application.Features.Payments
 {
     public class ListPaymentsQueryHandler : IRequestHandler<ListPaymentsQuery, OperationResult<PagedResult<Payment>>>
     {
-        private readonly ApplicationDbContext _dbContext;
+        private readonly IPaymentRepository _paymentRepository;
 
-        public ListPaymentsQueryHandler(ApplicationDbContext dbContext)
+        public ListPaymentsQueryHandler(IPaymentRepository paymentRepository)
         {
-            _dbContext = dbContext;
+            _paymentRepository = paymentRepository;
         }
 
         public async Task<OperationResult<PagedResult<Payment>>> Handle(ListPaymentsQuery request, CancellationToken cancellationToken)
         {
             var result = new OperationResult<PagedResult<Payment>>();
 
-            result.Value = await _dbContext
-                .Payments
-                .OrderBy(p => p.PaymentDate)
-                .GetPagedAsync(request.Page, request.PageSize);
+            result.Value = await _paymentRepository.ListAsync(request.Page, request.PageSize);
 
             return result;
         }

@@ -1,6 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using KooliProjekt.Application.Data;
+using KooliProjekt.Application.Data.Repositories;
 using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
 
@@ -8,30 +9,21 @@ namespace KooliProjekt.Application.Features.Invoices
 {
     public class SaveInvoiceCommandHandler : IRequestHandler<SaveInvoiceCommand, OperationResult>
     {
-        private readonly ApplicationDbContext _dbContext;
+        private readonly IInvoiceRepository _invoiceRepository;
 
-        public SaveInvoiceCommandHandler(ApplicationDbContext dbContext)
+        public SaveInvoiceCommandHandler(IInvoiceRepository invoiceRepository)
         {
-            _dbContext = dbContext;
+            _invoiceRepository = invoiceRepository;
         }
 
         public async Task<OperationResult> Handle(SaveInvoiceCommand request, CancellationToken cancellationToken)
         {
             var result = new OperationResult();
-            Invoice invoice;
-            if (request.Id == 0)
+
+            var invoice = new Invoice();
+            if (request.Id != 0)
             {
-                invoice = new Invoice();
-                await _dbContext.Invoices.AddAsync(invoice, cancellationToken);
-            }
-            else
-            {
-                invoice = await _dbContext.Invoices.FindAsync(new object[] { request.Id }, cancellationToken);
-                if (invoice == null)
-                {
-                    // Optionally handle not found
-                    return result;
-                }
+                invoice = await _invoiceRepository.GetByIdAsync(request.Id);
             }
 
             invoice.InvoiceNo = request.InvoiceNo;
@@ -42,7 +34,8 @@ namespace KooliProjekt.Application.Features.Invoices
             invoice.Discount = request.Discount;
             invoice.GrandTotal = request.GrandTotal;
 
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            await _invoiceRepository.SaveAsync(invoice);
+
             return result;
         }
     }

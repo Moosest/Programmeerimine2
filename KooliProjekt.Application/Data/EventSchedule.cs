@@ -7,9 +7,6 @@ using KooliProjekt.Application.Data;
 
 public class EventSchedule : Entity
 {
-    [Key]
-    public int Id { get; set; }
-
     [Required]
     public int EventId { get; set; }
 

@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using KooliProjekt.Application.Infrastructure.Paging;
 
 namespace KooliProjekt.Application.Data.Repositories
 {
@@ -7,5 +8,6 @@ namespace KooliProjekt.Application.Data.Repositories
         Task<Payment> GetByIdAsync(int id);
         Task SaveAsync(Payment entity);
         Task DeleteAsync(Payment entity);
+        Task<PagedResult<Payment>> ListAsync(int page, int pageSize);
     }
 }

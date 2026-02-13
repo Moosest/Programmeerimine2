@@ -5,9 +5,6 @@ using KooliProjekt.Application.Data;
 
 public class InvoiceLine : Entity
 {
-    [Key]
-    public int Id { get; set; }
-
     [Required]
     public int InvoiceId { get; set; }
 

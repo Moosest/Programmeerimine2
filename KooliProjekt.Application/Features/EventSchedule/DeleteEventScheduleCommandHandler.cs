@@ -1,26 +1,30 @@
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using KooliProjekt.Application.Data;
+using KooliProjekt.Application.Data.Repositories;
 using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace KooliProjekt.Application.Features.EventSchedules
 {
     public class DeleteEventScheduleCommandHandler : IRequestHandler<DeleteEventScheduleCommand, OperationResult>
     {
-        private readonly ApplicationDbContext _dbContext;
+        private readonly IEventScheduleRepository _eventScheduleRepository;
 
-        public DeleteEventScheduleCommandHandler(ApplicationDbContext dbContext)
+        public DeleteEventScheduleCommandHandler(IEventScheduleRepository eventScheduleRepository)
         {
-            _dbContext = dbContext;
+            _eventScheduleRepository = eventScheduleRepository;
         }
 
         public async Task<OperationResult> Handle(DeleteEventScheduleCommand request, CancellationToken cancellationToken)
         {
             var result = new OperationResult();
-            await _dbContext.EventSchedules.Where(s => s.Id == request.Id).ExecuteDeleteAsync(cancellationToken);
+
+            var entity = await _eventScheduleRepository.GetByIdAsync(request.Id);
+            if (entity != null)
+            {
+                await _eventScheduleRepository.DeleteAsync(entity);
+            }
+
             return result;
         }
     }

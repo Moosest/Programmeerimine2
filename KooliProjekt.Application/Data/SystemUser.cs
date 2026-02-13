@@ -7,9 +7,6 @@ using KooliProjekt.Application.Data;
 
 public class SystemUser : Entity
 {
-    [Key]
-    public int Id { get; set; }
-
     [Required]
     [MaxLength(50)]
     public string Username { get; set; }

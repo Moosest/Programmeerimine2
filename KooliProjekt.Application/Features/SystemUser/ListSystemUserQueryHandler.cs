@@ -1,33 +1,27 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using KooliProjekt.Application.Data;
+using KooliProjekt.Application.Data.Repositories;
 using KooliProjekt.Application.Infrastructure.Paging;
 using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace KooliProjekt.Application.Features.SystemUsers
 {
     public class ListSystemUsersQueryHandler : IRequestHandler<ListSystemUsersQuery, OperationResult<PagedResult<SystemUser>>>
     {
-        private readonly ApplicationDbContext _dbContext;
+        private readonly ISystemUserRepository _systemUserRepository;
 
-        public ListSystemUsersQueryHandler(ApplicationDbContext dbContext)
+        public ListSystemUsersQueryHandler(ISystemUserRepository systemUserRepository)
         {
-            _dbContext = dbContext;
+            _systemUserRepository = systemUserRepository;
         }
 
         public async Task<OperationResult<PagedResult<SystemUser>>> Handle(ListSystemUsersQuery request, CancellationToken cancellationToken)
         {
             var result = new OperationResult<PagedResult<SystemUser>>();
 
-            result.Value = await _dbContext
-                .SystemUsers
-                .OrderBy(su => su.Username)
-                .GetPagedAsync(request.Page, request.PageSize);
+            result.Value = await _systemUserRepository.ListAsync(request.Page, request.PageSize);
 
             return result;
         }

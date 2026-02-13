@@ -1,4 +1,3 @@
-
 namespace KooliProjekt.Application.Data
 {
 	public abstract class Entity

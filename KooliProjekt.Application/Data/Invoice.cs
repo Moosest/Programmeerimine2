@@ -7,17 +7,12 @@ using KooliProjekt.Application.Data;
 
 public class Invoice : Entity
 {
-    [Key]
-    public int Id { get; set; }
-
     [Required]
     [MaxLength(15)]
     public string InvoiceNo { get; set; }
 
     [Required]
     public DateTime InvoiceDate { get; set; }
-
-    
 
     [Required]
     public DateTime DueDate { get; set; }
