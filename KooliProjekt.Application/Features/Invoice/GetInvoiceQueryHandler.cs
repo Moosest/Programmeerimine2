@@ -32,7 +32,7 @@ namespace KooliProjekt.Application.Features.Invoices
 
             var result = new OperationResult<InvoiceDetailsDto>();
 
-            if (request.Id == 0)
+            if (request.Id <= 0)
             {
                 result.Value = new InvoiceDetailsDto();
                 return result;

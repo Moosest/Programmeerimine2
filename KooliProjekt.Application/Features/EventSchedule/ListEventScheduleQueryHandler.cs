@@ -13,15 +13,40 @@ namespace KooliProjekt.Application.Features.EventSchedules
 {
     public class ListEventSchedulesQueryHandler : IRequestHandler<ListEventSchedulesQuery, OperationResult<PagedResult<EventSchedule>>>
     {
+        public const int MaxPageSize = 100;
         private readonly ApplicationDbContext _dbContext;
 
         public ListEventSchedulesQueryHandler(ApplicationDbContext dbContext)
         {
+            if (dbContext == null)
+            {
+                throw new ArgumentNullException(nameof(dbContext));
+            }
             _dbContext = dbContext;
         }
 
         public async Task<OperationResult<PagedResult<EventSchedule>>> Handle(ListEventSchedulesQuery request, CancellationToken cancellationToken)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            if (request.Page <= 0)
+            {
+                throw new ArgumentException("Page must be greater than zero.", nameof(request));
+            }
+
+            if (request.PageSize <= 0)
+            {
+                throw new ArgumentException("PageSize must be greater than zero.", nameof(request));
+            }
+
+            if (request.PageSize > MaxPageSize)
+            {
+                throw new ArgumentException($"PageSize must not exceed {MaxPageSize}.", nameof(request));
+            }
+
             var result = new OperationResult<PagedResult<EventSchedule>>();
 
             result.Value = await _dbContext

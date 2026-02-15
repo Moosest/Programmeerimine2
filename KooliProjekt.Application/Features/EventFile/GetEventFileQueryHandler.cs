@@ -32,7 +32,7 @@ namespace KooliProjekt.Application.Features.EventFiles
 
             var result = new OperationResult<EventFileDetailsDto>();
 
-            if (request.Id == 0)
+            if (request.Id <= 0)
             {
                 result.Value = new EventFileDetailsDto();
                 return result;

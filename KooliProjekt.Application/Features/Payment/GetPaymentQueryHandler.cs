@@ -32,7 +32,7 @@ namespace KooliProjekt.Application.Features.Payments
 
             var result = new OperationResult<PaymentDetailsDto>();
 
-            if (request.Id == 0)
+            if (request.Id <= 0)
             {
                 result.Value = new PaymentDetailsDto();
                 return result;

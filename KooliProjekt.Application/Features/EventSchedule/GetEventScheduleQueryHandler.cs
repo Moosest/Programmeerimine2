@@ -32,7 +32,7 @@ namespace KooliProjekt.Application.Features.EventSchedules
 
             var result = new OperationResult<EventScheduleDetailsDto>();
 
-            if (request.Id == 0)
+            if (request.Id <= 0)
             {
                 result.Value = new EventScheduleDetailsDto();
                 return result;

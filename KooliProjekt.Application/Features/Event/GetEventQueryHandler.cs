@@ -32,7 +32,7 @@ namespace KooliProjekt.Application.Features.Events
 
             var result = new OperationResult<EventDetailsDto>();
 
-            if (request.Id == 0)
+            if (request.Id <= 0)
             {
                 result.Value = new EventDetailsDto();
                 return result;

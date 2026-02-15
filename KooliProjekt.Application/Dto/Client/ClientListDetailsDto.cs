@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Kooliprojekt.Application.Dto
+namespace KooliProjekt.Application.Dto
 {
     public class ClientDetailsDto
     {

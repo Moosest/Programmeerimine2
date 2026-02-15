@@ -1,3 +1,5 @@
+using System;
+
 namespace KooliProjekt.Application.Dto
 {
     public class EventItemDto

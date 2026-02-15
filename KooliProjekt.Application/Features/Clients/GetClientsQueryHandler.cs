@@ -32,7 +32,7 @@ namespace KooliProjekt.Application.Features.Clients
 
             var result = new OperationResult<ClientDetailsDto>();
 
-            if (request.Id == 0)
+            if (request.Id <= 0)
             {
                 result.Value = new ClientDetailsDto();
                 return result;

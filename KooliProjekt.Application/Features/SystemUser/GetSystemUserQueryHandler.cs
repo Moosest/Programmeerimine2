@@ -32,7 +32,7 @@ namespace KooliProjekt.Application.Features.SystemUsers
 
             var result = new OperationResult<SystemUserDetailsDto>();
 
-            if (request.Id == 0)
+            if (request.Id <= 0)
             {
                 result.Value = new SystemUserDetailsDto();
                 return result;
