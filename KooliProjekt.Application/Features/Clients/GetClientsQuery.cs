@@ -8,7 +8,7 @@ using MediatR;
 
 namespace KooliProjekt.Application.Features.Clients
 {
-    public class GetClientsQuery : IRequest<OperationResult<object>>
+    public class GetClientsQuery : IRequest<OperationResult<ClientDetailsDto>>
     {
         public int Id { get; set; }
         public string Name {get; set; }

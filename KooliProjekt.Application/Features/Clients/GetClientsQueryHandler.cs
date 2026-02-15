@@ -8,12 +8,16 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 namespace KooliProjekt.Application.Features.Clients
 {
-    public class GetClientsQueryHandler : IRequestHandler<GetClientsQuery, OperationResult<object>>
+    public class GetClientsQueryHandler : IRequestHandler<GetClientsQuery, OperationResult<ClientListDetailsDto>>
     {
         private readonly ApplicationDbContext _dbContext;
 
         public GetClientsQueryHandler(ApplicationDbContext dbContext)
         {
+            if (dbContext == null)
+            {
+                throw new ArgumentNullException(nameof(dbContext));
+            }
             _dbContext = dbContext;
         }
 
