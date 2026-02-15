@@ -4,6 +4,7 @@ using System.Data.Common;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using KooliProjekt.Application.Data;
 using KooliProjekt.Application.Features.EventFiles;
@@ -20,6 +21,13 @@ namespace KooliProjekt.Application.UnitTests.Features
             {
                 new GetEventFileQueryHandler(null);
             });
+        }
+        [Fact]
+        public async Task Get_throws_if_request_is_null()
+        {
+            var handler = new GetEventFileQueryHandler(DbContext);
+            await Assert.ThrowsAsync<ArgumentNullException>(() =>
+                handler.Handle(null, CancellationToken.None));
         }
         [Fact]
         public async Task Get_should_return_object_if_object_exists()

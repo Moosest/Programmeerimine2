@@ -4,6 +4,7 @@ using System.Data.Common;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using KooliProjekt.Application.Data;
 using KooliProjekt.Application.Features.Clients;
@@ -22,32 +23,36 @@ namespace KooliProjekt.Application.UnitTests.Features
             });
         }
         [Fact]
+        public async Task Get_throws_if_request_is_null()
+        {
+            var handler = new GetClientsQueryHandler(DbContext);
+            await Assert.ThrowsAsync<ArgumentNullException>(() =>
+                handler.Handle(null, CancellationToken.None));
+        }
+        [Fact]
         public async Task Get_should_return_object_if_object_exists()
         {
-            // Arrange 
-            var query = new GetToDoListQuery { Id = 1 };
-            var client = new Client { Title = "Test Client" };
+            // Arrange
+            var query = new GetClientsQuery { Id = 1 };
+            var client = new Client { Name = "Test Client" };
             var handler = new GetClientsQueryHandler(DbContext);
-            await DbContext.Clients.AddAsync(toDoList);
+            await DbContext.Clients.AddAsync(client);
             await DbContext.SaveChangesAsync();
 
             // Act
             var result = await handler.Handle(query, CancellationToken.None);
 
-            // Assert 
+            // Assert
             Assert.False(result.HasErrors);
-            Assert.NotNull(result.HasErrors);
-            Assert.Equal(1, result.Value.Id);
+            Assert.NotNull(result.Value);
         }
 
         [Fact]
         public async Task Get_should_return_null_if_object_does_not_exist()
         {
             // Arrange
-            var query = new GetClientQuery { Id = 101 };
-            var ClientList = new ClientList { Title = "Test Client List" };
-            var handler = new GetClientQueryHandler(DbContext);
-            await DbContext.Clients.SaveChangesAsync();
+            var query = new GetClientsQuery { Id = 101 };
+            var handler = new GetClientsQueryHandler(DbContext);
 
             // Act
             var result = await handler.Handle(query, CancellationToken.None);
@@ -58,4 +63,3 @@ namespace KooliProjekt.Application.UnitTests.Features
         }
     }
 }
-
