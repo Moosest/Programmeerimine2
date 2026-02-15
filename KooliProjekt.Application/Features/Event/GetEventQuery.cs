@@ -1,13 +1,11 @@
-using System.Diagnostics.Contracts;
-using System.Security.Cryptography.X509Certificates;
+using KooliProjekt.Application.Dto;
 using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
-using Microsoft.VisualBasic;
 using System;
 
 namespace KooliProjekt.Application.Features.Events
 {
-    public class GetEventQuery : IRequest<OperationResult<object>>
+    public class GetEventQuery : IRequest<OperationResult<EventDetailsDto>>
     {
         public int Id { get; set; }
         public string Name { get; set; }

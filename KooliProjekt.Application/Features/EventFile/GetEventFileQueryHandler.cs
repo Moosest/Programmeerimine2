@@ -1,36 +1,48 @@
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using KooliProjekt.Application.Data;
+using KooliProjekt.Application.Dto;
 using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace KooliProjekt.Application.Features.EventFiles
 {
-    public class GetEventFileQueryHandler : IRequestHandler<GetEventFileQuery, OperationResult<object>>
+    public class GetEventFileQueryHandler : IRequestHandler<GetEventFileQuery, OperationResult<EventFileDetailsDto>>
     {
         private readonly ApplicationDbContext _dbContext;
 
         public GetEventFileQueryHandler(ApplicationDbContext dbContext)
         {
+            if (dbContext == null)
+            {
+                throw new ArgumentNullException(nameof(dbContext));
+            }
             _dbContext = dbContext;
         }
 
-        public async Task<OperationResult<object>> Handle(GetEventFileQuery request, CancellationToken cancellationToken)
+        public async Task<OperationResult<EventFileDetailsDto>> Handle(GetEventFileQuery request, CancellationToken cancellationToken)
         {
-            var result = new OperationResult<object>();
+            var result = new OperationResult<EventFileDetailsDto>();
+
+            if (request.Id == 0)
+            {
+                result.Value = new EventFileDetailsDto();
+                return result;
+            }
 
             result.Value = await _dbContext
                 .EventFiles
                 .Where(eventFile => eventFile.Id == request.Id)
-                .Select(eventFile => new
+                .Select(eventFile => new EventFileDetailsDto
                 {
-                    eventFile.Id,
-                    eventFile.EventId,
-                    eventFile.FilePath,
-                    eventFile.FileName,
-                    eventFile.UploadedAt
+                    Id = eventFile.Id,
+                    EventId = eventFile.EventId,
+                    FilePath = eventFile.FilePath,
+                    FileName = eventFile.FileName,
+                    UploadedAt = eventFile.UploadedAt
                 })
                 .FirstOrDefaultAsync(cancellationToken);
 
