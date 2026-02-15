@@ -25,6 +25,11 @@ namespace KooliProjekt.Application.Features.Invoices
 
         public async Task<OperationResult<InvoiceDetailsDto>> Handle(GetInvoiceQuery request, CancellationToken cancellationToken)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
             var result = new OperationResult<InvoiceDetailsDto>();
 
             if (request.Id == 0)

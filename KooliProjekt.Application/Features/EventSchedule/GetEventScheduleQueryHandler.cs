@@ -25,6 +25,11 @@ namespace KooliProjekt.Application.Features.EventSchedules
 
         public async Task<OperationResult<EventScheduleDetailsDto>> Handle(GetEventScheduleQuery request, CancellationToken cancellationToken)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
             var result = new OperationResult<EventScheduleDetailsDto>();
 
             if (request.Id == 0)

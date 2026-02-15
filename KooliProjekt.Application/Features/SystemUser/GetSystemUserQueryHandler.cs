@@ -25,6 +25,11 @@ namespace KooliProjekt.Application.Features.SystemUsers
 
         public async Task<OperationResult<SystemUserDetailsDto>> Handle(GetSystemUserQuery request, CancellationToken cancellationToken)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
             var result = new OperationResult<SystemUserDetailsDto>();
 
             if (request.Id == 0)

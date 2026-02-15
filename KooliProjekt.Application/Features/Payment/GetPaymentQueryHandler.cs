@@ -25,6 +25,11 @@ namespace KooliProjekt.Application.Features.Payments
 
         public async Task<OperationResult<PaymentDetailsDto>> Handle(GetPaymentQuery request, CancellationToken cancellationToken)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
             var result = new OperationResult<PaymentDetailsDto>();
 
             if (request.Id == 0)

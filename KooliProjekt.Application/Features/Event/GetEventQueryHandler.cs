@@ -25,6 +25,11 @@ namespace KooliProjekt.Application.Features.Events
 
         public async Task<OperationResult<EventDetailsDto>> Handle(GetEventQuery request, CancellationToken cancellationToken)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
             var result = new OperationResult<EventDetailsDto>();
 
             if (request.Id == 0)

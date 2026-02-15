@@ -25,6 +25,11 @@ namespace KooliProjekt.Application.Features.EventFiles
 
         public async Task<OperationResult<EventFileDetailsDto>> Handle(GetEventFileQuery request, CancellationToken cancellationToken)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
             var result = new OperationResult<EventFileDetailsDto>();
 
             if (request.Id == 0)
