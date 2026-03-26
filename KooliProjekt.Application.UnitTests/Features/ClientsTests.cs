@@ -288,5 +288,67 @@ namespace KooliProjekt.Application.UnitTests.Features
             Assert.NotNull(updatedClient);
             Assert.Equal("Updated Client", updatedClient.Name);
         }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        [InlineData("01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890")]
+        public void SaveValidator_should_return_false_when_name_is_invalid(string name)
+        {
+            var validator = new SaveClientsCommandValidator(DbContext);
+            var command = new SaveClientsCommand { Name = name, Email = "client@test.com", Phone = "123456", Address = "Addr", Discount = 0.1m };
+
+            var result = validator.Validate(command);
+
+            Assert.False(result.IsValid);
+            Assert.Equal(nameof(SaveClientsCommand.Name), result.Errors.First().PropertyName);
+        }
+
+        [Theory]
+        [InlineData("not-an-email")]
+        [InlineData("")]
+        public void SaveValidator_should_return_false_when_email_is_invalid(string email)
+        {
+            var validator = new SaveClientsCommandValidator(DbContext);
+            var command = new SaveClientsCommand { Name = "Client", Email = email, Phone = "123456", Address = "Addr", Discount = 0.1m };
+
+            var result = validator.Validate(command);
+
+            Assert.False(result.IsValid);
+            Assert.Contains(result.Errors, x => x.PropertyName == nameof(SaveClientsCommand.Email));
+        }
+
+        [Theory]
+        [InlineData(-0.01)]
+        [InlineData(0.91)]
+        public void SaveValidator_should_return_false_when_discount_is_invalid(decimal discount)
+        {
+            var validator = new SaveClientsCommandValidator(DbContext);
+            var command = new SaveClientsCommand { Name = "Client", Email = "client@test.com", Phone = "123456", Address = "Addr", Discount = discount };
+
+            var result = validator.Validate(command);
+
+            Assert.False(result.IsValid);
+            Assert.Contains(result.Errors, x => x.PropertyName == nameof(SaveClientsCommand.Discount));
+        }
+
+        [Fact]
+        public void SaveValidator_should_return_true_when_command_is_valid()
+        {
+            var validator = new SaveClientsCommandValidator(DbContext);
+            var command = new SaveClientsCommand
+            {
+                Id = 0,
+                Name = "Client",
+                Email = "client@test.com",
+                Phone = "1234567",
+                Address = "Tallinn",
+                Discount = 0.2m
+            };
+
+            var result = validator.Validate(command);
+
+            Assert.True(result.IsValid);
+        }
     }
 }

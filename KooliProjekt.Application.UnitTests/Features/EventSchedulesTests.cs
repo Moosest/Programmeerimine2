@@ -312,5 +312,62 @@ namespace KooliProjekt.Application.UnitTests.Features
             Assert.NotNull(result);
             Assert.False(result.HasErrors);
         }
+
+        [Fact]
+        public void SaveValidator_should_return_false_when_event_id_is_invalid()
+        {
+            var validator = new SaveEventScheduleCommandValidator(DbContext);
+            var command = new SaveEventScheduleCommand { EventId = 0, StartTime = DateTime.Now, FilePath = "/a", FileName = "a.txt", UploadedAt = DateTime.Now };
+
+            var result = validator.Validate(command);
+
+            Assert.False(result.IsValid);
+            Assert.Equal(nameof(SaveEventScheduleCommand.EventId), result.Errors.First().PropertyName);
+        }
+
+        [Fact]
+        public void SaveValidator_should_return_false_when_start_time_is_default()
+        {
+            var validator = new SaveEventScheduleCommandValidator(DbContext);
+            var command = new SaveEventScheduleCommand { EventId = 1, StartTime = default, FilePath = "/a", FileName = "a.txt", UploadedAt = DateTime.Now };
+
+            var result = validator.Validate(command);
+
+            Assert.False(result.IsValid);
+            Assert.Contains(result.Errors, x => x.PropertyName == nameof(SaveEventScheduleCommand.StartTime));
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        public void SaveValidator_should_return_false_when_file_name_is_invalid(string fileName)
+        {
+            var validator = new SaveEventScheduleCommandValidator(DbContext);
+            var command = new SaveEventScheduleCommand { EventId = 1, StartTime = DateTime.Now, FilePath = "/a", FileName = fileName, UploadedAt = DateTime.Now };
+
+            var result = validator.Validate(command);
+
+            Assert.False(result.IsValid);
+            Assert.Contains(result.Errors, x => x.PropertyName == nameof(SaveEventScheduleCommand.FileName));
+        }
+
+        [Fact]
+        public void SaveValidator_should_return_true_when_command_is_valid()
+        {
+            var validator = new SaveEventScheduleCommandValidator(DbContext);
+            var command = new SaveEventScheduleCommand
+            {
+                Id = 0,
+                EventId = 1,
+                StartTime = DateTime.Now,
+                FilePath = "/schedules/file.txt",
+                FileName = "file.txt",
+                UploadedAt = DateTime.Now
+            };
+
+            var result = validator.Validate(command);
+
+            Assert.True(result.IsValid);
+        }
     }
 }

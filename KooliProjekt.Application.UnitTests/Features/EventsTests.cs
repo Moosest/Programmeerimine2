@@ -379,5 +379,86 @@ namespace KooliProjekt.Application.UnitTests.Features
             Assert.NotNull(updatedEvent);
             Assert.Equal("Updated Event", updatedEvent.Name);
         }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        public void SaveValidator_should_return_false_when_name_is_invalid(string name)
+        {
+            var validator = new SaveEventCommandValidator(DbContext);
+            var command = new SaveEventCommand { Name = name, Description = "Desc", Location = "Loc", MaxSeats = 10, Price = 1, Summary = "Sum", StartTime = DateTime.Now };
+
+            var result = validator.Validate(command);
+
+            Assert.False(result.IsValid);
+            Assert.Equal(nameof(SaveEventCommand.Name), result.Errors.First().PropertyName);
+        }
+
+        [Fact]
+        public void SaveValidator_should_return_false_when_name_is_too_long()
+        {
+            var validator = new SaveEventCommandValidator(DbContext);
+            var command = new SaveEventCommand
+            {
+                Name = new string('a', 151),
+                Description = "Desc",
+                Location = "Loc",
+                MaxSeats = 10,
+                Price = 1,
+                Summary = "Sum",
+                StartTime = DateTime.Now
+            };
+
+            var result = validator.Validate(command);
+
+            Assert.False(result.IsValid);
+            Assert.Contains(result.Errors, x => x.PropertyName == nameof(SaveEventCommand.Name));
+        }
+
+        [Fact]
+        public void SaveValidator_should_return_false_when_max_seats_is_invalid()
+        {
+            var validator = new SaveEventCommandValidator(DbContext);
+            var command = new SaveEventCommand { Name = "Event", Description = "Desc", Location = "Loc", MaxSeats = 0, Price = 1, Summary = "Sum", StartTime = DateTime.Now };
+
+            var result = validator.Validate(command);
+
+            Assert.False(result.IsValid);
+            Assert.Contains(result.Errors, x => x.PropertyName == nameof(SaveEventCommand.MaxSeats));
+        }
+
+        [Fact]
+        public void SaveValidator_should_return_false_when_price_is_invalid()
+        {
+            var validator = new SaveEventCommandValidator(DbContext);
+            var command = new SaveEventCommand { Name = "Event", Description = "Desc", Location = "Loc", MaxSeats = 10, Price = -1, Summary = "Sum", StartTime = DateTime.Now };
+
+            var result = validator.Validate(command);
+
+            Assert.False(result.IsValid);
+            Assert.Contains(result.Errors, x => x.PropertyName == nameof(SaveEventCommand.Price));
+        }
+
+        [Fact]
+        public void SaveValidator_should_return_true_when_command_is_valid()
+        {
+            var validator = new SaveEventCommandValidator(DbContext);
+            var command = new SaveEventCommand
+            {
+                Id = 0,
+                Name = "Spring Event",
+                Description = "Description",
+                Location = "Tallinn",
+                MaxSeats = 100,
+                Price = 25,
+                Summary = "Summary",
+                StartTime = DateTime.Now,
+                IsActive = true
+            };
+
+            var result = validator.Validate(command);
+
+            Assert.True(result.IsValid);
+        }
     }
 }

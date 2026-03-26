@@ -309,5 +309,52 @@ namespace KooliProjekt.Application.UnitTests.Features
             Assert.NotNull(result);
             Assert.False(result.HasErrors);
         }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        [InlineData("012345678901234567890123456789012345678901234567890")]
+        public void SaveValidator_should_return_false_when_username_is_invalid(string username)
+        {
+            var validator = new SaveSystemUserCommandValidator(DbContext);
+            var command = new SaveSystemUserCommand { Username = username, PasswordHash = "hash", Role = "User", CreatedAt = DateTime.Now };
+
+            var result = validator.Validate(command);
+
+            Assert.False(result.IsValid);
+            Assert.Equal(nameof(SaveSystemUserCommand.Username), result.Errors.First().PropertyName);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        public void SaveValidator_should_return_false_when_password_hash_is_invalid(string passwordHash)
+        {
+            var validator = new SaveSystemUserCommandValidator(DbContext);
+            var command = new SaveSystemUserCommand { Username = "user", PasswordHash = passwordHash, Role = "User", CreatedAt = DateTime.Now };
+
+            var result = validator.Validate(command);
+
+            Assert.False(result.IsValid);
+            Assert.Contains(result.Errors, x => x.PropertyName == nameof(SaveSystemUserCommand.PasswordHash));
+        }
+
+        [Fact]
+        public void SaveValidator_should_return_true_when_command_is_valid()
+        {
+            var validator = new SaveSystemUserCommandValidator(DbContext);
+            var command = new SaveSystemUserCommand
+            {
+                Id = 0,
+                Username = "admin",
+                PasswordHash = "hash123",
+                Role = "Admin",
+                CreatedAt = DateTime.Now
+            };
+
+            var result = validator.Validate(command);
+
+            Assert.True(result.IsValid);
+        }
     }
 }

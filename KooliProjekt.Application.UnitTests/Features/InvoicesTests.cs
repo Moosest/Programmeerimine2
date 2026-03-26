@@ -387,5 +387,94 @@ namespace KooliProjekt.Application.UnitTests.Features
             Assert.NotNull(result);
             Assert.False(result.HasErrors);
         }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        [InlineData("0123456789012345")]
+        public void SaveValidator_should_return_false_when_invoice_no_is_invalid(string invoiceNo)
+        {
+            var validator = new SaveInvoiceCommandValidator(DbContext);
+            var command = new SaveInvoiceCommand
+            {
+                InvoiceNo = invoiceNo,
+                InvoiceDate = DateTime.Today,
+                DueDate = DateTime.Today,
+                Subtotal = 100,
+                Shipping = 10,
+                Discount = 0.1m,
+                GrandTotal = 110
+            };
+
+            var result = validator.Validate(command);
+
+            Assert.False(result.IsValid);
+            Assert.Equal(nameof(SaveInvoiceCommand.InvoiceNo), result.Errors.First().PropertyName);
+        }
+
+        [Fact]
+        public void SaveValidator_should_return_false_when_due_date_is_before_invoice_date()
+        {
+            var validator = new SaveInvoiceCommandValidator(DbContext);
+            var command = new SaveInvoiceCommand
+            {
+                InvoiceNo = "INV-1",
+                InvoiceDate = DateTime.Today,
+                DueDate = DateTime.Today.AddDays(-1),
+                Subtotal = 100,
+                Shipping = 10,
+                Discount = 0.1m,
+                GrandTotal = 110
+            };
+
+            var result = validator.Validate(command);
+
+            Assert.False(result.IsValid);
+            Assert.Contains(result.Errors, x => x.PropertyName == nameof(SaveInvoiceCommand.DueDate));
+        }
+
+        [Theory]
+        [InlineData(-0.01)]
+        [InlineData(0.91)]
+        public void SaveValidator_should_return_false_when_discount_is_invalid(decimal discount)
+        {
+            var validator = new SaveInvoiceCommandValidator(DbContext);
+            var command = new SaveInvoiceCommand
+            {
+                InvoiceNo = "INV-2",
+                InvoiceDate = DateTime.Today,
+                DueDate = DateTime.Today,
+                Subtotal = 100,
+                Shipping = 10,
+                Discount = discount,
+                GrandTotal = 110
+            };
+
+            var result = validator.Validate(command);
+
+            Assert.False(result.IsValid);
+            Assert.Contains(result.Errors, x => x.PropertyName == nameof(SaveInvoiceCommand.Discount));
+        }
+
+        [Fact]
+        public void SaveValidator_should_return_true_when_command_is_valid()
+        {
+            var validator = new SaveInvoiceCommandValidator(DbContext);
+            var command = new SaveInvoiceCommand
+            {
+                Id = 0,
+                InvoiceNo = "INV-100",
+                InvoiceDate = DateTime.Today,
+                DueDate = DateTime.Today.AddDays(14),
+                Subtotal = 200,
+                Shipping = 20,
+                Discount = 0.1m,
+                GrandTotal = 220
+            };
+
+            var result = validator.Validate(command);
+
+            Assert.True(result.IsValid);
+        }
     }
 }

@@ -315,5 +315,64 @@ namespace KooliProjekt.Application.UnitTests.Features
             Assert.NotNull(result);
             Assert.False(result.HasErrors);
         }
+
+        [Fact]
+        public void SaveValidator_should_return_false_when_invoice_id_is_invalid()
+        {
+            var validator = new SavePaymentCommandValidator(DbContext);
+            var command = new SavePaymentCommand { InvoiceId = 0, Amount = 10, Method = "Card", TransactionRef = "TX1", ModifiedBy = 1, PaymentDate = DateTime.Now };
+
+            var result = validator.Validate(command);
+
+            Assert.False(result.IsValid);
+            Assert.Equal(nameof(SavePaymentCommand.InvoiceId), result.Errors.First().PropertyName);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        [InlineData("0123456789012345678901234567890123456789012345678901")]
+        public void SaveValidator_should_return_false_when_method_is_invalid(string method)
+        {
+            var validator = new SavePaymentCommandValidator(DbContext);
+            var command = new SavePaymentCommand { InvoiceId = 1, Amount = 10, Method = method, TransactionRef = "TX1", ModifiedBy = 1, PaymentDate = DateTime.Now };
+
+            var result = validator.Validate(command);
+
+            Assert.False(result.IsValid);
+            Assert.Contains(result.Errors, x => x.PropertyName == nameof(SavePaymentCommand.Method));
+        }
+
+        [Fact]
+        public void SaveValidator_should_return_false_when_modified_by_is_invalid()
+        {
+            var validator = new SavePaymentCommandValidator(DbContext);
+            var command = new SavePaymentCommand { InvoiceId = 1, Amount = 10, Method = "Card", TransactionRef = "TX1", ModifiedBy = 0, PaymentDate = DateTime.Now };
+
+            var result = validator.Validate(command);
+
+            Assert.False(result.IsValid);
+            Assert.Contains(result.Errors, x => x.PropertyName == nameof(SavePaymentCommand.ModifiedBy));
+        }
+
+        [Fact]
+        public void SaveValidator_should_return_true_when_command_is_valid()
+        {
+            var validator = new SavePaymentCommandValidator(DbContext);
+            var command = new SavePaymentCommand
+            {
+                Id = 0,
+                InvoiceId = 1,
+                Amount = 100,
+                Method = "Card",
+                TransactionRef = "TX-123",
+                ModifiedBy = 2,
+                PaymentDate = DateTime.Now
+            };
+
+            var result = validator.Validate(command);
+
+            Assert.True(result.IsValid);
+        }
     }
 }

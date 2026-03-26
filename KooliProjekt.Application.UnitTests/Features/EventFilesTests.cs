@@ -308,5 +308,67 @@ namespace KooliProjekt.Application.UnitTests.Features
             Assert.NotNull(result);
             Assert.False(result.HasErrors);
         }
+
+        [Fact]
+        public void SaveValidator_should_return_false_when_event_id_is_invalid()
+        {
+            var validator = new SaveEventFileCommandValidator(DbContext);
+            var command = new SaveEventFileCommand { EventId = 0, FilePath = "/a", FileName = "a.txt", UploadedAt = DateTime.Now };
+
+            var result = validator.Validate(command);
+
+            Assert.False(result.IsValid);
+            Assert.Equal(nameof(SaveEventFileCommand.EventId), result.Errors.First().PropertyName);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(null)]
+        public void SaveValidator_should_return_false_when_file_path_is_invalid(string filePath)
+        {
+            var validator = new SaveEventFileCommandValidator(DbContext);
+            var command = new SaveEventFileCommand { EventId = 1, FilePath = filePath, FileName = "a.txt", UploadedAt = DateTime.Now };
+
+            var result = validator.Validate(command);
+
+            Assert.False(result.IsValid);
+            Assert.Contains(result.Errors, x => x.PropertyName == nameof(SaveEventFileCommand.FilePath));
+        }
+
+        [Fact]
+        public void SaveValidator_should_return_false_when_file_path_is_too_long()
+        {
+            var validator = new SaveEventFileCommandValidator(DbContext);
+            var command = new SaveEventFileCommand
+            {
+                EventId = 1,
+                FilePath = new string('a', 501),
+                FileName = "a.txt",
+                UploadedAt = DateTime.Now
+            };
+
+            var result = validator.Validate(command);
+
+            Assert.False(result.IsValid);
+            Assert.Contains(result.Errors, x => x.PropertyName == nameof(SaveEventFileCommand.FilePath));
+        }
+
+        [Fact]
+        public void SaveValidator_should_return_true_when_command_is_valid()
+        {
+            var validator = new SaveEventFileCommandValidator(DbContext);
+            var command = new SaveEventFileCommand
+            {
+                Id = 0,
+                EventId = 1,
+                FilePath = "/files/file.pdf",
+                FileName = "file.pdf",
+                UploadedAt = DateTime.Now
+            };
+
+            var result = validator.Validate(command);
+
+            Assert.True(result.IsValid);
+        }
     }
 }
