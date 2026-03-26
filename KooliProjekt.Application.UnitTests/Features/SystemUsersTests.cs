@@ -53,7 +53,7 @@ namespace KooliProjekt.Application.UnitTests.Features
         {
             // Arrange
             var query = new GetSystemUserQuery { Id = 1 };
-            var systemUser = new SystemUser { Username = "Test SystemUser" };
+            var systemUser = new SystemUser { Username = "Test SystemUser", PasswordHash = "hash", Role = "Admin" };
             var handler = new GetSystemUserQueryHandler(DbContext);
             await DbContext.SystemUsers.AddAsync(systemUser);
             await DbContext.SaveChangesAsync();
@@ -127,6 +127,86 @@ namespace KooliProjekt.Application.UnitTests.Features
             var query = new ListSystemUsersQuery { Page = 1, PageSize = ListSystemUsersQueryHandler.MaxPageSize + 1 };
             await Assert.ThrowsAsync<ArgumentException>(() =>
                 handler.Handle(query, CancellationToken.None));
+        }
+
+        [Fact]
+        public void Delete_should_throw_when_dbcontext_is_null()
+        {
+            var dbContext = (ApplicationDbContext)null;
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+            {
+                new DeleteSystemUserCommandHandler(dbContext);
+            });
+
+            Assert.Equal(nameof(dbContext), exception.ParamName);
+        }
+
+        [Fact]
+        public async Task Delete_should_throw_when_request_is_null()
+        {
+            // Arrange
+            var request = (DeleteSystemUserCommand)null;
+            var handler = new DeleteSystemUserCommandHandler(DbContext);
+
+            // Act && Assert
+            var ex = await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+            {
+                await handler.Handle(request, CancellationToken.None);
+            });
+            Assert.Equal("request", ex.ParamName);
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-1)]
+        public async Task Delete_should_return_when_request_id_is_zero_or_negative(int id)
+        {
+            // Arrange
+            var command = new DeleteSystemUserCommand { Id = id };
+            var handler = new DeleteSystemUserCommandHandler(DbContext);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+        }
+
+        [Fact]
+        public async Task Delete_should_return_when_systemuser_does_not_exist()
+        {
+            // Arrange
+            var command = new DeleteSystemUserCommand { Id = 999 };
+            var handler = new DeleteSystemUserCommandHandler(DbContext);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+        }
+
+        [Fact]
+        public async Task Delete_should_delete_existing_systemuser()
+        {
+            // Arrange
+            var systemUser = new SystemUser { Username = "testuser", PasswordHash = "hash123", Role = "Admin" };
+            await DbContext.SystemUsers.AddAsync(systemUser);
+            await DbContext.SaveChangesAsync();
+
+            var command = new DeleteSystemUserCommand { Id = systemUser.Id };
+            var handler = new DeleteSystemUserCommandHandler(DbContext);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            var deletedSystemUser = await DbContext.SystemUsers.FindAsync(systemUser.Id);
+            Assert.Null(deletedSystemUser);
         }
     }
 }

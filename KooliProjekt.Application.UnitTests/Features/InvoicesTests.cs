@@ -128,5 +128,145 @@ namespace KooliProjekt.Application.UnitTests.Features
             await Assert.ThrowsAsync<ArgumentException>(() =>
                 handler.Handle(query, CancellationToken.None));
         }
+
+        [Fact]
+        public void Delete_should_throw_when_dbcontext_is_null()
+        {
+            var dbContext = (ApplicationDbContext)null;
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+            {
+                new DeleteInvoiceCommandHandler(dbContext);
+            });
+
+            Assert.Equal(nameof(dbContext), exception.ParamName);
+        }
+
+        [Fact]
+        public async Task Delete_should_throw_when_request_is_null()
+        {
+            // Arrange
+            var request = (DeleteInvoiceCommand)null;
+            var handler = new DeleteInvoiceCommandHandler(DbContext);
+
+            // Act && Assert
+            var ex = await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+            {
+                await handler.Handle(request, CancellationToken.None);
+            });
+            Assert.Equal("request", ex.ParamName);
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-1)]
+        public async Task Delete_should_return_when_request_id_is_zero_or_negative(int id)
+        {
+            // Arrange
+            var command = new DeleteInvoiceCommand { Id = id };
+            var handler = new DeleteInvoiceCommandHandler(DbContext);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+        }
+
+        [Fact]
+        public async Task Delete_should_return_when_invoice_does_not_exist()
+        {
+            // Arrange
+            var command = new DeleteInvoiceCommand { Id = 999 };
+            var handler = new DeleteInvoiceCommandHandler(DbContext);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+        }
+
+        [Fact]
+        public async Task Delete_should_delete_existing_invoice()
+        {
+            // Arrange
+            var invoice = new Invoice { InvoiceNo = "Test Invoice", InvoiceDate = DateTime.Now, DueDate = DateTime.Now, Subtotal = 100, Shipping = 10, Discount = 0.1m, GrandTotal = 99 };
+            await DbContext.Invoices.AddAsync(invoice);
+            await DbContext.SaveChangesAsync();
+
+            var command = new DeleteInvoiceCommand { Id = invoice.Id };
+            var handler = new DeleteInvoiceCommandHandler(DbContext);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            var deletedInvoice = await DbContext.Invoices.FindAsync(invoice.Id);
+            Assert.Null(deletedInvoice);
+        }
+
+        [Fact]
+        public async Task Delete_should_delete_related_invoice_lines()
+        {
+            // Arrange
+            var invoice = new Invoice { InvoiceNo = "Test Invoice", InvoiceDate = DateTime.Now, DueDate = DateTime.Now, Subtotal = 100, Shipping = 10, Discount = 0.1m, GrandTotal = 99 };
+            await DbContext.Invoices.AddAsync(invoice);
+            await DbContext.SaveChangesAsync();
+
+            var invoiceLine = new InvoiceLine { InvoiceId = invoice.Id, LineItem = "Item 1", UnitPrice = 50, Quantity = 1, VatRate = 0.2m, Discount = 0, Total = 50 };
+            await DbContext.InvoiceLines.AddAsync(invoiceLine);
+            await DbContext.SaveChangesAsync();
+
+            var command = new DeleteInvoiceCommand { Id = invoice.Id };
+            var handler = new DeleteInvoiceCommandHandler(DbContext);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            var deletedInvoiceLine = await DbContext.InvoiceLines.FindAsync(invoiceLine.Id);
+            Assert.Null(deletedInvoiceLine);
+        }
+
+        [Fact]
+        public async Task Delete_should_delete_invoice_and_all_related_invoice_lines()
+        {
+            // Arrange
+            var invoice = new Invoice { InvoiceNo = "Test Invoice", InvoiceDate = DateTime.Now, DueDate = DateTime.Now, Subtotal = 100, Shipping = 10, Discount = 0.1m, GrandTotal = 99 };
+            await DbContext.Invoices.AddAsync(invoice);
+            await DbContext.SaveChangesAsync();
+
+            var invoiceLine1 = new InvoiceLine { InvoiceId = invoice.Id, LineItem = "Item 1", UnitPrice = 50, Quantity = 1, VatRate = 0.2m, Discount = 0, Total = 50 };
+            var invoiceLine2 = new InvoiceLine { InvoiceId = invoice.Id, LineItem = "Item 2", UnitPrice = 25, Quantity = 2, VatRate = 0.2m, Discount = 0, Total = 50 };
+            
+            await DbContext.InvoiceLines.AddAsync(invoiceLine1);
+            await DbContext.InvoiceLines.AddAsync(invoiceLine2);
+            await DbContext.SaveChangesAsync();
+
+            var command = new DeleteInvoiceCommand { Id = invoice.Id };
+            var handler = new DeleteInvoiceCommandHandler(DbContext);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            
+            var deletedInvoice = await DbContext.Invoices.FindAsync(invoice.Id);
+            Assert.Null(deletedInvoice);
+            
+            var deletedInvoiceLine1 = await DbContext.InvoiceLines.FindAsync(invoiceLine1.Id);
+            Assert.Null(deletedInvoiceLine1);
+            
+            var deletedInvoiceLine2 = await DbContext.InvoiceLines.FindAsync(invoiceLine2.Id);
+            Assert.Null(deletedInvoiceLine2);
+        }
     }
 }

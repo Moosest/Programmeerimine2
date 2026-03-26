@@ -53,7 +53,7 @@ namespace KooliProjekt.Application.UnitTests.Features
         {
             // Arrange
             var query = new GetPaymentQuery { Id = 1 };
-            var payment = new Payment { Method = "Test Payment" };
+            var payment = new Payment { Method = "Test Payment", TransactionRef = "TX001" };
             var handler = new GetPaymentQueryHandler(DbContext);
             await DbContext.Payments.AddAsync(payment);
             await DbContext.SaveChangesAsync();
@@ -127,6 +127,86 @@ namespace KooliProjekt.Application.UnitTests.Features
             var query = new ListPaymentsQuery { Page = 1, PageSize = ListPaymentsQueryHandler.MaxPageSize + 1 };
             await Assert.ThrowsAsync<ArgumentException>(() =>
                 handler.Handle(query, CancellationToken.None));
+        }
+
+        [Fact]
+        public void Delete_should_throw_when_dbcontext_is_null()
+        {
+            var dbContext = (ApplicationDbContext)null;
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+            {
+                new DeletePaymentCommandHandler(dbContext);
+            });
+
+            Assert.Equal(nameof(dbContext), exception.ParamName);
+        }
+
+        [Fact]
+        public async Task Delete_should_throw_when_request_is_null()
+        {
+            // Arrange
+            var request = (DeletePaymentCommand)null;
+            var handler = new DeletePaymentCommandHandler(DbContext);
+
+            // Act && Assert
+            var ex = await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+            {
+                await handler.Handle(request, CancellationToken.None);
+            });
+            Assert.Equal("request", ex.ParamName);
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-1)]
+        public async Task Delete_should_return_when_request_id_is_zero_or_negative(int id)
+        {
+            // Arrange
+            var command = new DeletePaymentCommand { Id = id };
+            var handler = new DeletePaymentCommandHandler(DbContext);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+        }
+
+        [Fact]
+        public async Task Delete_should_return_when_payment_does_not_exist()
+        {
+            // Arrange
+            var command = new DeletePaymentCommand { Id = 999 };
+            var handler = new DeletePaymentCommandHandler(DbContext);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+        }
+
+        [Fact]
+        public async Task Delete_should_delete_existing_payment()
+        {
+            // Arrange
+            var payment = new Payment { Method = "Test Payment", TransactionRef = "TX001", Amount = 100, PaymentDate = DateTime.Now };
+            await DbContext.Payments.AddAsync(payment);
+            await DbContext.SaveChangesAsync();
+
+            var command = new DeletePaymentCommand { Id = payment.Id };
+            var handler = new DeletePaymentCommandHandler(DbContext);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            var deletedPayment = await DbContext.Payments.FindAsync(payment.Id);
+            Assert.Null(deletedPayment);
         }
     }
 }

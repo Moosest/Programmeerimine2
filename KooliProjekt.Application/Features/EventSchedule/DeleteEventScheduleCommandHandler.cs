@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,13 +15,39 @@ namespace KooliProjekt.Application.Features.EventSchedules
 
         public DeleteEventScheduleCommandHandler(ApplicationDbContext dbContext)
         {
+            if (dbContext == null)
+            {
+                throw new ArgumentNullException(nameof(dbContext));
+            }
+
             _dbContext = dbContext;
         }
 
         public async Task<OperationResult> Handle(DeleteEventScheduleCommand request, CancellationToken cancellationToken)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
             var result = new OperationResult();
-            await _dbContext.EventSchedules.Where(s => s.Id == request.Id).ExecuteDeleteAsync(cancellationToken);
+
+            if (request.Id <= 0)
+            {
+                return result;
+            }
+
+            var schedule = await _dbContext.EventSchedules
+                .FirstOrDefaultAsync(s => s.Id == request.Id, cancellationToken);
+
+            if (schedule == null)
+            {
+                return result;
+            }
+
+            _dbContext.EventSchedules.Remove(schedule);
+            await _dbContext.SaveChangesAsync(cancellationToken);
+
             return result;
         }
     }

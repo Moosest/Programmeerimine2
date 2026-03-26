@@ -52,7 +52,7 @@ namespace KooliProjekt.Application.UnitTests.Features
         {
             // Arrange
             var query = new GetClientsQuery { Id = 1 };
-            var client = new Client { Name = "Test Client" };
+            var client = new Client { Name = "Test Client", Email = "test@test.com", Phone = "1234567", Address = "Test St 1" };
             var handler = new GetClientsQueryHandler(DbContext);
             await DbContext.Clients.AddAsync(client);
             await DbContext.SaveChangesAsync();
@@ -126,6 +126,86 @@ namespace KooliProjekt.Application.UnitTests.Features
             var query = new ListClientsQuery { Page = 1, PageSize = ListClientsQueryHandler.MaxPageSize + 1 };
             await Assert.ThrowsAsync<ArgumentException>(() =>
                 handler.Handle(query, CancellationToken.None));
+        }
+
+        [Fact]
+        public void Delete_should_throw_when_dbcontext_is_null()
+        {
+            var dbContext = (ApplicationDbContext)null;
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+            {
+                new DeleteClientCommandHandler(dbContext);
+            });
+
+            Assert.Equal(nameof(dbContext), exception.ParamName);
+        }
+
+        [Fact]
+        public async Task Delete_should_throw_when_request_is_null()
+        {
+            // Arrange
+            var request = (DeleteClientCommand)null;
+            var handler = new DeleteClientCommandHandler(DbContext);
+
+            // Act && Assert
+            var ex = await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+            {
+                await handler.Handle(request, CancellationToken.None);
+            });
+            Assert.Equal("request", ex.ParamName);
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-1)]
+        public async Task Delete_should_return_when_request_id_is_zero_or_negative(int id)
+        {
+            // Arrange
+            var command = new DeleteClientCommand { Id = id };
+            var handler = new DeleteClientCommandHandler(DbContext);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+        }
+
+        [Fact]
+        public async Task Delete_should_return_when_client_does_not_exist()
+        {
+            // Arrange
+            var command = new DeleteClientCommand { Id = 999 };
+            var handler = new DeleteClientCommandHandler(DbContext);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+        }
+
+        [Fact]
+        public async Task Delete_should_delete_existing_client()
+        {
+            // Arrange
+            var client = new Client { Name = "Test Client", Email = "test@test.com", Phone = "1234567", Address = "Test St 1" };
+            await DbContext.Clients.AddAsync(client);
+            await DbContext.SaveChangesAsync();
+
+            var command = new DeleteClientCommand { Id = client.Id };
+            var handler = new DeleteClientCommandHandler(DbContext);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            var deletedClient = await DbContext.Clients.FindAsync(client.Id);
+            Assert.Null(deletedClient);
         }
     }
 }

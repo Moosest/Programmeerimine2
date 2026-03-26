@@ -53,7 +53,7 @@ namespace KooliProjekt.Application.UnitTests.Features
         {
             // Arrange
             var query = new GetEventScheduleQuery { Id = 1 };
-            var eventSchedule = new EventSchedule { FileName = "Test EventSchedule" };
+            var eventSchedule = new EventSchedule { FileName = "Test EventSchedule", FilePath = "/test/path" };
             var handler = new GetEventScheduleQueryHandler(DbContext);
             await DbContext.EventSchedules.AddAsync(eventSchedule);
             await DbContext.SaveChangesAsync();
@@ -127,6 +127,86 @@ namespace KooliProjekt.Application.UnitTests.Features
             var query = new ListEventSchedulesQuery { Page = 1, PageSize = ListEventSchedulesQueryHandler.MaxPageSize + 1 };
             await Assert.ThrowsAsync<ArgumentException>(() =>
                 handler.Handle(query, CancellationToken.None));
+        }
+
+        [Fact]
+        public void Delete_should_throw_when_dbcontext_is_null()
+        {
+            var dbContext = (ApplicationDbContext)null;
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+            {
+                new DeleteEventScheduleCommandHandler(dbContext);
+            });
+
+            Assert.Equal(nameof(dbContext), exception.ParamName);
+        }
+
+        [Fact]
+        public async Task Delete_should_throw_when_request_is_null()
+        {
+            // Arrange
+            var request = (DeleteEventScheduleCommand)null;
+            var handler = new DeleteEventScheduleCommandHandler(DbContext);
+
+            // Act && Assert
+            var ex = await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+            {
+                await handler.Handle(request, CancellationToken.None);
+            });
+            Assert.Equal("request", ex.ParamName);
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-1)]
+        public async Task Delete_should_return_when_request_id_is_zero_or_negative(int id)
+        {
+            // Arrange
+            var command = new DeleteEventScheduleCommand { Id = id };
+            var handler = new DeleteEventScheduleCommandHandler(DbContext);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+        }
+
+        [Fact]
+        public async Task Delete_should_return_when_eventschedule_does_not_exist()
+        {
+            // Arrange
+            var command = new DeleteEventScheduleCommand { Id = 999 };
+            var handler = new DeleteEventScheduleCommandHandler(DbContext);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+        }
+
+        [Fact]
+        public async Task Delete_should_delete_existing_eventschedule()
+        {
+            // Arrange
+            var eventSchedule = new EventSchedule { EventId = 1, FileName = "Test Schedule", FilePath = "/test/path", StartTime = DateTime.Now, UploadedAt = DateTime.Now };
+            await DbContext.EventSchedules.AddAsync(eventSchedule);
+            await DbContext.SaveChangesAsync();
+
+            var command = new DeleteEventScheduleCommand { Id = eventSchedule.Id };
+            var handler = new DeleteEventScheduleCommandHandler(DbContext);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            var deletedEventSchedule = await DbContext.EventSchedules.FindAsync(eventSchedule.Id);
+            Assert.Null(deletedEventSchedule);
         }
     }
 }

@@ -52,7 +52,7 @@ namespace KooliProjekt.Application.UnitTests.Features
         {
             // Arrange
             var query = new GetEventFileQuery { Id = 1 };
-            var eventFile = new EventFile { FileName = "Test EventFile" };
+            var eventFile = new EventFile { FileName = "Test EventFile", FilePath = "/test/path" };
             var handler = new GetEventFileQueryHandler(DbContext);
             await DbContext.EventFiles.AddAsync(eventFile);
             await DbContext.SaveChangesAsync();
@@ -126,6 +126,86 @@ namespace KooliProjekt.Application.UnitTests.Features
             var query = new ListEventFilesQuery { Page = 1, PageSize = ListEventFilesQueryHandler.MaxPageSize + 1 };
             await Assert.ThrowsAsync<ArgumentException>(() =>
                 handler.Handle(query, CancellationToken.None));
+        }
+
+        [Fact]
+        public void Delete_should_throw_when_dbcontext_is_null()
+        {
+            var dbContext = (ApplicationDbContext)null;
+            var exception = Assert.Throws<ArgumentNullException>(() =>
+            {
+                new DeleteEventFileCommandHandler(dbContext);
+            });
+
+            Assert.Equal(nameof(dbContext), exception.ParamName);
+        }
+
+        [Fact]
+        public async Task Delete_should_throw_when_request_is_null()
+        {
+            // Arrange
+            var request = (DeleteEventFileCommand)null;
+            var handler = new DeleteEventFileCommandHandler(DbContext);
+
+            // Act && Assert
+            var ex = await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+            {
+                await handler.Handle(request, CancellationToken.None);
+            });
+            Assert.Equal("request", ex.ParamName);
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-1)]
+        public async Task Delete_should_return_when_request_id_is_zero_or_negative(int id)
+        {
+            // Arrange
+            var command = new DeleteEventFileCommand { Id = id };
+            var handler = new DeleteEventFileCommandHandler(DbContext);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+        }
+
+        [Fact]
+        public async Task Delete_should_return_when_eventfile_does_not_exist()
+        {
+            // Arrange
+            var command = new DeleteEventFileCommand { Id = 999 };
+            var handler = new DeleteEventFileCommandHandler(DbContext);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+        }
+
+        [Fact]
+        public async Task Delete_should_delete_existing_eventfile()
+        {
+            // Arrange
+            var eventFile = new EventFile { EventId = 1, FileName = "Test File", FilePath = "/test/path", UploadedAt = DateTime.Now };
+            await DbContext.EventFiles.AddAsync(eventFile);
+            await DbContext.SaveChangesAsync();
+
+            var command = new DeleteEventFileCommand { Id = eventFile.Id };
+            var handler = new DeleteEventFileCommandHandler(DbContext);
+
+            // Act
+            var result = await handler.Handle(command, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            var deletedEventFile = await DbContext.EventFiles.FindAsync(eventFile.Id);
+            Assert.Null(deletedEventFile);
         }
     }
 }
