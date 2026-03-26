@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using KooliProjekt.Application.Data;
 using KooliProjekt.Application.Features.SystemUsers;
 using Xunit;
@@ -207,6 +208,106 @@ namespace KooliProjekt.Application.UnitTests.Features
             Assert.False(result.HasErrors);
             var deletedSystemUser = await DbContext.SystemUsers.FindAsync(systemUser.Id);
             Assert.Null(deletedSystemUser);
+        }
+
+        [Fact]
+        public void Save_should_throw_when_dbcontext_is_null()
+        {
+            Assert.Throws<ArgumentNullException>(() =>
+            {
+                new SaveSystemUserCommandHandler(null);
+            });
+        }
+
+        [Fact]
+        public async Task Save_should_throw_when_request_is_null()
+        {
+            // Arrange
+            var request = (SaveSystemUserCommand)null;
+            var handler = new SaveSystemUserCommandHandler(DbContext);
+
+            // Act && Assert
+            var ex = await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+            {
+                await handler.Handle(request, CancellationToken.None);
+            });
+            Assert.Equal("request", ex.ParamName);
+        }
+
+        [Fact]
+        public async Task Save_should_save_new_systemuser()
+        {
+            // Arrange
+            var request = new SaveSystemUserCommand
+            {
+                Id = 0,
+                Username = "newuser",
+                PasswordHash = "hash123",
+                Role = "Admin",
+                CreatedAt = DateTime.Now
+            };
+            var handler = new SaveSystemUserCommandHandler(DbContext);
+
+            // Act
+            var result = await handler.Handle(request, CancellationToken.None);
+            var savedUser = await DbContext.SystemUsers.FirstOrDefaultAsync(u => u.Username == "newuser");
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(savedUser);
+            Assert.Equal("newuser", savedUser.Username);
+        }
+
+        [Fact]
+        public async Task Save_should_save_existing_systemuser()
+        {
+            // Arrange
+            var user = new SystemUser { Username = "olduser", PasswordHash = "oldhash", Role = "User", CreatedAt = DateTime.Now };
+            await DbContext.SystemUsers.AddAsync(user);
+            await DbContext.SaveChangesAsync();
+
+            var request = new SaveSystemUserCommand
+            {
+                Id = user.Id,
+                Username = "updateduser",
+                PasswordHash = "newhash",
+                Role = "Admin",
+                CreatedAt = DateTime.Now
+            };
+            var handler = new SaveSystemUserCommandHandler(DbContext);
+
+            // Act
+            var result = await handler.Handle(request, CancellationToken.None);
+            var updatedUser = await DbContext.SystemUsers.FindAsync(user.Id);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(updatedUser);
+            Assert.Equal("Admin", updatedUser.Role);
+        }
+
+        [Fact]
+        public async Task Save_should_not_fail_when_systemuser_does_not_exist()
+        {
+            // Arrange
+            var request = new SaveSystemUserCommand
+            {
+                Id = 999,
+                Username = "testuser",
+                PasswordHash = "testhash",
+                Role = "User",
+                CreatedAt = DateTime.Now
+            };
+            var handler = new SaveSystemUserCommandHandler(DbContext);
+
+            // Act
+            var result = await handler.Handle(request, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
         }
     }
 }

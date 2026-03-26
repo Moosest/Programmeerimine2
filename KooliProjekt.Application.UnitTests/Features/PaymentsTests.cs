@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using KooliProjekt.Application.Data;
 using KooliProjekt.Application.Features.Payments;
 using Xunit;
@@ -207,6 +208,112 @@ namespace KooliProjekt.Application.UnitTests.Features
             Assert.False(result.HasErrors);
             var deletedPayment = await DbContext.Payments.FindAsync(payment.Id);
             Assert.Null(deletedPayment);
+        }
+
+        [Fact]
+        public void Save_should_throw_when_dbcontext_is_null()
+        {
+            Assert.Throws<ArgumentNullException>(() =>
+            {
+                new SavePaymentCommandHandler(null);
+            });
+        }
+
+        [Fact]
+        public async Task Save_should_throw_when_request_is_null()
+        {
+            // Arrange
+            var request = (SavePaymentCommand)null;
+            var handler = new SavePaymentCommandHandler(DbContext);
+
+            // Act && Assert
+            var ex = await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+            {
+                await handler.Handle(request, CancellationToken.None);
+            });
+            Assert.Equal("request", ex.ParamName);
+        }
+
+        [Fact]
+        public async Task Save_should_save_new_payment()
+        {
+            // Arrange
+            var request = new SavePaymentCommand
+            {
+                Id = 0,
+                InvoiceId = 1,
+                Amount = 500m,
+                PaymentDate = DateTime.Now,
+                Method = "Credit Card",
+                TransactionRef = "TXN001",
+                ModifiedBy = 1
+            };
+            var handler = new SavePaymentCommandHandler(DbContext);
+
+            // Act
+            var result = await handler.Handle(request, CancellationToken.None);
+            var savedPayment = await DbContext.Payments.FirstOrDefaultAsync(p => p.TransactionRef == "TXN001");
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(savedPayment);
+            Assert.Equal("TXN001", savedPayment.TransactionRef);
+        }
+
+        [Fact]
+        public async Task Save_should_save_existing_payment()
+        {
+            // Arrange
+            var payment = new Payment { InvoiceId = 1, Amount = 100m, PaymentDate = DateTime.Now, Method = "Cash", TransactionRef = "TXN002", ModifiedBy = 1 };
+            await DbContext.Payments.AddAsync(payment);
+            await DbContext.SaveChangesAsync();
+
+            var request = new SavePaymentCommand
+            {
+                Id = payment.Id,
+                InvoiceId = 2,
+                Amount = 200m,
+                PaymentDate = DateTime.Now,
+                Method = "Check",
+                TransactionRef = "TXN002-UPDATED",
+                ModifiedBy = 1
+            };
+            var handler = new SavePaymentCommandHandler(DbContext);
+
+            // Act
+            var result = await handler.Handle(request, CancellationToken.None);
+            var updatedPayment = await DbContext.Payments.FindAsync(payment.Id);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(updatedPayment);
+            Assert.Equal("Check", updatedPayment.Method);
+        }
+
+        [Fact]
+        public async Task Save_should_not_fail_when_payment_does_not_exist()
+        {
+            // Arrange
+            var request = new SavePaymentCommand
+            {
+                Id = 999,
+                InvoiceId = 1,
+                Amount = 500m,
+                PaymentDate = DateTime.Now,
+                Method = "Credit Card",
+                TransactionRef = "TXN999",
+                ModifiedBy = 1
+            };
+            var handler = new SavePaymentCommandHandler(DbContext);
+
+            // Act
+            var result = await handler.Handle(request, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
         }
     }
 }

@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using KooliProjekt.Application.Data;
 using KooliProjekt.Application.Features.Invoices;
 using Xunit;
@@ -267,6 +268,124 @@ namespace KooliProjekt.Application.UnitTests.Features
             
             var deletedInvoiceLine2 = await DbContext.InvoiceLines.FindAsync(invoiceLine2.Id);
             Assert.Null(deletedInvoiceLine2);
+        }
+
+        [Fact]
+        public void Save_should_throw_when_dbcontext_is_null()
+        {
+            Assert.Throws<ArgumentNullException>(() =>
+            {
+                new SaveInvoiceCommandHandler(null);
+            });
+        }
+
+        [Fact]
+        public async Task Save_should_throw_when_request_is_null()
+        {
+            // Arrange
+            var request = (SaveInvoiceCommand)null;
+            var handler = new SaveInvoiceCommandHandler(DbContext);
+
+            // Act && Assert
+            var ex = await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+            {
+                await handler.Handle(request, CancellationToken.None);
+            });
+            Assert.Equal("request", ex.ParamName);
+        }
+
+        [Fact]
+        public async Task Save_should_save_new_invoice()
+        {
+            // Arrange
+            var request = new SaveInvoiceCommand
+            {
+                Id = 0,
+                InvoiceNo = "INV001",
+                InvoiceDate = DateTime.Now,
+                DueDate = DateTime.Now.AddDays(30),
+                Subtotal = 1000m,
+                Shipping = 50m,
+                Discount = 0.1m,
+                GrandTotal = 1090m
+            };
+            var handler = new SaveInvoiceCommandHandler(DbContext);
+
+            // Act
+            var result = await handler.Handle(request, CancellationToken.None);
+            var savedInvoice = await DbContext.Invoices.FirstOrDefaultAsync(i => i.InvoiceNo == "INV001");
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(savedInvoice);
+            Assert.Equal("INV001", savedInvoice.InvoiceNo);
+        }
+
+        [Fact]
+        public async Task Save_should_save_existing_invoice()
+        {
+            // Arrange
+            var invoice = new Invoice
+            {
+                InvoiceNo = "INV002",
+                InvoiceDate = DateTime.Now,
+                DueDate = DateTime.Now.AddDays(30),
+                Subtotal = 500m,
+                Shipping = 25m,
+                Discount = 0.05m,
+                GrandTotal = 545m
+            };
+            await DbContext.Invoices.AddAsync(invoice);
+            await DbContext.SaveChangesAsync();
+
+            var request = new SaveInvoiceCommand
+            {
+                Id = invoice.Id,
+                InvoiceNo = "INV002-UPDATED",
+                InvoiceDate = DateTime.Now,
+                DueDate = DateTime.Now.AddDays(30),
+                Subtotal = 2000m,
+                Shipping = 100m,
+                Discount = 0.2m,
+                GrandTotal = 2080m
+            };
+            var handler = new SaveInvoiceCommandHandler(DbContext);
+
+            // Act
+            var result = await handler.Handle(request, CancellationToken.None);
+            var updatedInvoice = await DbContext.Invoices.FindAsync(invoice.Id);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(updatedInvoice);
+            Assert.Equal("INV002-UPDATED", updatedInvoice.InvoiceNo);
+        }
+
+        [Fact]
+        public async Task Save_should_not_fail_when_invoice_does_not_exist()
+        {
+            // Arrange
+            var request = new SaveInvoiceCommand
+            {
+                Id = 999,
+                InvoiceNo = "INV999",
+                InvoiceDate = DateTime.Now,
+                DueDate = DateTime.Now.AddDays(30),
+                Subtotal = 500m,
+                Shipping = 25m,
+                Discount = 0.05m,
+                GrandTotal = 545m
+            };
+            var handler = new SaveInvoiceCommandHandler(DbContext);
+
+            // Act
+            var result = await handler.Handle(request, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
         }
     }
 }

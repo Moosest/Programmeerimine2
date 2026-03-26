@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using KooliProjekt.Application.Data;
@@ -12,11 +13,13 @@ namespace KooliProjekt.Application.Features.SystemUsers
 
         public SaveSystemUserCommandHandler(ApplicationDbContext dbContext)
         {
+            if (dbContext == null) throw new ArgumentNullException(nameof(dbContext));
             _dbContext = dbContext;
         }
 
         public async Task<OperationResult> Handle(SaveSystemUserCommand request, CancellationToken cancellationToken)
         {
+            if (request == null) throw new ArgumentNullException(nameof(request));
             var result = new OperationResult();
             SystemUser user;
             if (request.Id == 0)

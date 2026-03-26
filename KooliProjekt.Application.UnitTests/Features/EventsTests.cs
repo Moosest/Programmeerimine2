@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using KooliProjekt.Application.Data;
 using KooliProjekt.Application.Features.Events;
 using Xunit;
@@ -291,6 +292,92 @@ namespace KooliProjekt.Application.UnitTests.Features
             
             var deletedSchedule = await DbContext.EventSchedules.FindAsync(schedule.Id);
             Assert.Null(deletedSchedule);
+        }
+
+        [Fact]
+        public void Save_should_throw_when_dbcontext_is_null()
+        {
+            Assert.Throws<ArgumentNullException>(() =>
+            {
+                new SaveEventCommandHandler(null);
+            });
+        }
+
+        [Fact]
+        public async Task Save_should_throw_when_request_is_null()
+        {
+            // Arrange
+            var request = (SaveEventCommand)null;
+            var handler = new SaveEventCommandHandler(DbContext);
+
+            // Act && Assert
+            var ex = await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+            {
+                await handler.Handle(request, CancellationToken.None);
+            });
+            Assert.Equal("request", ex.ParamName);
+        }
+
+        [Fact]
+        public async Task Save_should_save_new_event()
+        {
+            // Arrange
+            var request = new SaveEventCommand
+            {
+                Id = 0,
+                Name = "New Event",
+                Description = "Test Description",
+                Location = "Test Location",
+                Summary = "Test Summary",
+                StartTime = DateTime.Now,
+                MaxSeats = 100,
+                Price = 50.00m,
+                IsActive = true
+            };
+            var handler = new SaveEventCommandHandler(DbContext);
+
+            // Act
+            var result = await handler.Handle(request, CancellationToken.None);
+            var savedEvent = await DbContext.Events.FirstOrDefaultAsync(e => e.Name == "New Event");
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(savedEvent);
+            Assert.Equal("New Event", savedEvent.Name);
+        }
+
+        [Fact]
+        public async Task Save_should_save_existing_event()
+        {
+            // Arrange
+            var @event = new Event { Name = "Old Event", Description = "Old Desc", Location = "Old Loc", Summary = "Old Sum" };
+            await DbContext.Events.AddAsync(@event);
+            await DbContext.SaveChangesAsync();
+
+            var request = new SaveEventCommand
+            {
+                Id = @event.Id,
+                Name = "Updated Event",
+                Description = "Updated Desc",
+                Location = "Updated Loc",
+                Summary = "Updated Sum",
+                StartTime = DateTime.Now,
+                MaxSeats = 200,
+                Price = 100.00m,
+                IsActive = false
+            };
+            var handler = new SaveEventCommandHandler(DbContext);
+
+            // Act
+            var result = await handler.Handle(request, CancellationToken.None);
+            var updatedEvent = await DbContext.Events.FindAsync(@event.Id);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(updatedEvent);
+            Assert.Equal("Updated Event", updatedEvent.Name);
         }
     }
 }

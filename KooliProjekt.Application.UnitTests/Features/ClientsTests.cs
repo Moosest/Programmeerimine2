@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using KooliProjekt.Application.Data;
 using KooliProjekt.Application.Features.Clients;
 using Xunit;
@@ -206,6 +207,86 @@ namespace KooliProjekt.Application.UnitTests.Features
             Assert.False(result.HasErrors);
             var deletedClient = await DbContext.Clients.FindAsync(client.Id);
             Assert.Null(deletedClient);
+        }
+
+        [Fact]
+        public void Save_should_throw_when_dbcontext_is_null()
+        {
+            Assert.Throws<ArgumentNullException>(() =>
+            {
+                new SaveClientsCommandHandler(null);
+            });
+        }
+
+        [Fact]
+        public async Task Save_should_throw_when_request_is_null()
+        {
+            // Arrange
+            var request = (SaveClientsCommand)null;
+            var handler = new SaveClientsCommandHandler(DbContext);
+
+            // Act && Assert
+            var ex = await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+            {
+                await handler.Handle(request, CancellationToken.None);
+            });
+            Assert.Equal("request", ex.ParamName);
+        }
+
+        [Fact]
+        public async Task Save_should_save_new_client()
+        {
+            // Arrange
+            var request = new SaveClientsCommand
+            {
+                Id = 0,
+                Name = "New Client",
+                Email = "newclient@test.com",
+                Phone = "1234567890",
+                Address = "123 Main St",
+                Discount = 0.1m
+            };
+            var handler = new SaveClientsCommandHandler(DbContext);
+
+            // Act
+            var result = await handler.Handle(request, CancellationToken.None);
+            var savedClient = await DbContext.Clients.FirstOrDefaultAsync(c => c.Name == "New Client");
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(savedClient);
+            Assert.Equal("New Client", savedClient.Name);
+        }
+
+        [Fact]
+        public async Task Save_should_save_existing_client()
+        {
+            // Arrange
+            var client = new Client { Name = "Old Client", Email = "old@test.com", Phone = "9876543210", Address = "456 Oak Ave", Discount = 0.05m };
+            await DbContext.Clients.AddAsync(client);
+            await DbContext.SaveChangesAsync();
+
+            var request = new SaveClientsCommand
+            {
+                Id = client.Id,
+                Name = "Updated Client",
+                Email = "updated@test.com",
+                Phone = "5555555555",
+                Address = "789 Elm Rd",
+                Discount = 0.15m
+            };
+            var handler = new SaveClientsCommandHandler(DbContext);
+
+            // Act
+            var result = await handler.Handle(request, CancellationToken.None);
+            var updatedClient = await DbContext.Clients.FindAsync(client.Id);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(updatedClient);
+            Assert.Equal("Updated Client", updatedClient.Name);
         }
     }
 }

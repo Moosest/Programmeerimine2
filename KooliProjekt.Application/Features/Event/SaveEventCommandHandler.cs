@@ -18,11 +18,13 @@ namespace KooliProjekt.Application.Features.Events
 
         public SaveEventCommandHandler(ApplicationDbContext dbContext)
         {
+            if (dbContext == null) throw new ArgumentNullException(nameof(dbContext));
             _dbContext = dbContext;
         }
 
         public async Task<OperationResult> Handle(SaveEventCommand request, CancellationToken cancellationToken)
         {
+            if (request == null) throw new ArgumentNullException(nameof(request));
             var result = new OperationResult();
 
             var list = new Event();

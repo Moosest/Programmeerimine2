@@ -18,11 +18,13 @@ namespace KooliProjekt.Application.Features.Clients
 
         public SaveClientsCommandHandler(ApplicationDbContext dbContext)
         {
+            if (dbContext == null) throw new ArgumentNullException(nameof(dbContext));
             _dbContext = dbContext;
         }
 
         public async Task<OperationResult> Handle(SaveClientsCommand request, CancellationToken cancellationToken)
         {
+            if (request == null) throw new ArgumentNullException(nameof(request));
             var result = new OperationResult();
 
             var list = new Client();

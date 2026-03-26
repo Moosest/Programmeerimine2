@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using KooliProjekt.Application.Data;
 using KooliProjekt.Application.Features.EventSchedules;
 using Xunit;
@@ -207,6 +208,109 @@ namespace KooliProjekt.Application.UnitTests.Features
             Assert.False(result.HasErrors);
             var deletedEventSchedule = await DbContext.EventSchedules.FindAsync(eventSchedule.Id);
             Assert.Null(deletedEventSchedule);
+        }
+
+        [Fact]
+        public void Save_should_throw_when_dbcontext_is_null()
+        {
+            Assert.Throws<ArgumentNullException>(() =>
+            {
+                new SaveEventScheduleCommandHandler(null);
+            });
+        }
+
+        [Fact]
+        public async Task Save_should_throw_when_request_is_null()
+        {
+            // Arrange
+            var request = (SaveEventScheduleCommand)null;
+            var handler = new SaveEventScheduleCommandHandler(DbContext);
+
+            // Act && Assert
+            var ex = await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+            {
+                await handler.Handle(request, CancellationToken.None);
+            });
+            Assert.Equal("request", ex.ParamName);
+        }
+
+        [Fact]
+        public async Task Save_should_save_new_eventschedule()
+        {
+            // Arrange
+            var request = new SaveEventScheduleCommand
+            {
+                Id = 0,
+                EventId = 1,
+                StartTime = DateTime.Now.AddDays(1),
+                FilePath = "/schedules/new.txt",
+                FileName = "new.txt",
+                UploadedAt = DateTime.Now
+            };
+            var handler = new SaveEventScheduleCommandHandler(DbContext);
+
+            // Act
+            var result = await handler.Handle(request, CancellationToken.None);
+            var savedSchedule = await DbContext.EventSchedules.FirstOrDefaultAsync(s => s.FileName == "new.txt");
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(savedSchedule);
+            Assert.Equal(1, savedSchedule.EventId);
+        }
+
+        [Fact]
+        public async Task Save_should_save_existing_eventschedule()
+        {
+            // Arrange
+            var schedule = new EventSchedule { EventId = 1, StartTime = DateTime.Now, FilePath = "/schedules/old.txt", FileName = "old.txt", UploadedAt = DateTime.Now };
+            await DbContext.EventSchedules.AddAsync(schedule);
+            await DbContext.SaveChangesAsync();
+
+            var request = new SaveEventScheduleCommand
+            {
+                Id = schedule.Id,
+                EventId = 2,
+                StartTime = DateTime.Now.AddDays(2),
+                FilePath = "/schedules/updated.txt",
+                FileName = "updated.txt",
+                UploadedAt = DateTime.Now
+            };
+            var handler = new SaveEventScheduleCommandHandler(DbContext);
+
+            // Act
+            var result = await handler.Handle(request, CancellationToken.None);
+            var updatedSchedule = await DbContext.EventSchedules.FindAsync(schedule.Id);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(updatedSchedule);
+            Assert.Equal("updated.txt", updatedSchedule.FileName);
+        }
+
+        [Fact]
+        public async Task Save_should_not_fail_when_eventschedule_does_not_exist()
+        {
+            // Arrange
+            var request = new SaveEventScheduleCommand
+            {
+                Id = 999,
+                EventId = 1,
+                StartTime = DateTime.Now,
+                FilePath = "/schedules/file.txt",
+                FileName = "file.txt",
+                UploadedAt = DateTime.Now
+            };
+            var handler = new SaveEventScheduleCommandHandler(DbContext);
+
+            // Act
+            var result = await handler.Handle(request, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
         }
     }
 }

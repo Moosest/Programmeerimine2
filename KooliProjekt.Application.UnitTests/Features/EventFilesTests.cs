@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using KooliProjekt.Application.Data;
 using KooliProjekt.Application.Features.EventFiles;
 using Xunit;
@@ -206,6 +207,106 @@ namespace KooliProjekt.Application.UnitTests.Features
             Assert.False(result.HasErrors);
             var deletedEventFile = await DbContext.EventFiles.FindAsync(eventFile.Id);
             Assert.Null(deletedEventFile);
+        }
+
+        [Fact]
+        public void Save_should_throw_when_dbcontext_is_null()
+        {
+            Assert.Throws<ArgumentNullException>(() =>
+            {
+                new SaveEventFileCommandHandler(null);
+            });
+        }
+
+        [Fact]
+        public async Task Save_should_throw_when_request_is_null()
+        {
+            // Arrange
+            var request = (SaveEventFileCommand)null;
+            var handler = new SaveEventFileCommandHandler(DbContext);
+
+            // Act && Assert
+            var ex = await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+            {
+                await handler.Handle(request, CancellationToken.None);
+            });
+            Assert.Equal("request", ex.ParamName);
+        }
+
+        [Fact]
+        public async Task Save_should_save_new_eventfile()
+        {
+            // Arrange
+            var request = new SaveEventFileCommand
+            {
+                Id = 0,
+                EventId = 1,
+                FilePath = "/files/newfile.pdf",
+                FileName = "newfile.pdf",
+                UploadedAt = DateTime.Now
+            };
+            var handler = new SaveEventFileCommandHandler(DbContext);
+
+            // Act
+            var result = await handler.Handle(request, CancellationToken.None);
+            var savedEventFile = await DbContext.EventFiles.FirstOrDefaultAsync(f => f.FileName == "newfile.pdf");
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(savedEventFile);
+            Assert.Equal(1, savedEventFile.EventId);
+        }
+
+        [Fact]
+        public async Task Save_should_save_existing_eventfile()
+        {
+            // Arrange
+            var eventFile = new EventFile { EventId = 1, FilePath = "/files/oldfile.pdf", FileName = "oldfile.pdf", UploadedAt = DateTime.Now };
+            await DbContext.EventFiles.AddAsync(eventFile);
+            await DbContext.SaveChangesAsync();
+
+            var request = new SaveEventFileCommand
+            {
+                Id = eventFile.Id,
+                EventId = 2,
+                FilePath = "/files/updated.pdf",
+                FileName = "updated.pdf",
+                UploadedAt = DateTime.Now
+            };
+            var handler = new SaveEventFileCommandHandler(DbContext);
+
+            // Act
+            var result = await handler.Handle(request, CancellationToken.None);
+            var updatedEventFile = await DbContext.EventFiles.FindAsync(eventFile.Id);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
+            Assert.NotNull(updatedEventFile);
+            Assert.Equal("updated.pdf", updatedEventFile.FileName);
+        }
+
+        [Fact]
+        public async Task Save_should_not_fail_when_eventfile_does_not_exist()
+        {
+            // Arrange
+            var request = new SaveEventFileCommand
+            {
+                Id = 999,
+                EventId = 1,
+                FilePath = "/files/file.pdf",
+                FileName = "file.pdf",
+                UploadedAt = DateTime.Now
+            };
+            var handler = new SaveEventFileCommandHandler(DbContext);
+
+            // Act
+            var result = await handler.Handle(request, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.False(result.HasErrors);
         }
     }
 }
