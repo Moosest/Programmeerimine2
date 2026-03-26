@@ -131,6 +131,23 @@ namespace KooliProjekt.Application.UnitTests.Features
         }
 
         [Fact]
+        public async Task List_should_filter_by_search()
+        {
+            await DbContext.Payments.AddAsync(new Payment { InvoiceId = 1, Amount = 10, PaymentDate = DateTime.Now, Method = "Card", TransactionRef = "TX-AAA", ModifiedBy = 1 });
+            await DbContext.Payments.AddAsync(new Payment { InvoiceId = 1, Amount = 10, PaymentDate = DateTime.Now, Method = "Cash", TransactionRef = "TX-BBB", ModifiedBy = 1 });
+            await DbContext.SaveChangesAsync();
+
+            var handler = new ListPaymentsQueryHandler(DbContext);
+            var query = new ListPaymentsQuery { Page = 1, PageSize = 10, Search = "AAA" };
+
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            Assert.NotNull(result.Value);
+            Assert.Single(result.Value.Results);
+            Assert.Equal("TX-AAA", result.Value.Results.First().TransactionRef);
+        }
+
+        [Fact]
         public void Delete_should_throw_when_dbcontext_is_null()
         {
             var dbContext = (ApplicationDbContext)null;

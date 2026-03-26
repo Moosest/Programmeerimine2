@@ -49,8 +49,16 @@ namespace KooliProjekt.Application.Features.EventSchedules
 
             var result = new OperationResult<PagedResult<EventSchedule>>();
 
-            result.Value = await _dbContext
-                .EventSchedules
+            var query = _dbContext.EventSchedules.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(request.Search))
+            {
+                query = query.Where(es =>
+                    es.FileName.Contains(request.Search) ||
+                    es.FilePath.Contains(request.Search));
+            }
+
+            result.Value = await query
                 .OrderBy(es => es.StartTime)
                 .GetPagedAsync(request.Page, request.PageSize);
 

@@ -131,6 +131,23 @@ namespace KooliProjekt.Application.UnitTests.Features
         }
 
         [Fact]
+        public async Task List_should_filter_by_search()
+        {
+            await DbContext.Invoices.AddAsync(new Invoice { InvoiceNo = "INV-ALPHA", InvoiceDate = DateTime.Now, DueDate = DateTime.Now, Subtotal = 10, Shipping = 0, Discount = 0, GrandTotal = 10 });
+            await DbContext.Invoices.AddAsync(new Invoice { InvoiceNo = "INV-BETA", InvoiceDate = DateTime.Now, DueDate = DateTime.Now, Subtotal = 20, Shipping = 0, Discount = 0, GrandTotal = 20 });
+            await DbContext.SaveChangesAsync();
+
+            var handler = new ListInvoicesQueryHandler(DbContext);
+            var query = new ListInvoicesQuery { Page = 1, PageSize = 10, Search = "ALPHA" };
+
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            Assert.NotNull(result.Value);
+            Assert.Single(result.Value.Results);
+            Assert.Equal("INV-ALPHA", result.Value.Results.First().InvoiceNo);
+        }
+
+        [Fact]
         public void Delete_should_throw_when_dbcontext_is_null()
         {
             var dbContext = (ApplicationDbContext)null;

@@ -1,0 +1,50 @@
+Summary
+  Generated on: 3/26/2026 - 11:05:38 AM
+  Coverage date: 3/26/2026 - 9:51:13 AM - 3/26/2026 - 11:04:39 AM
+  Parser: MultiReport (3x Cobertura)
+  Assemblies: 1
+  Classes: 28
+  Files: 28
+  Line coverage: 99%
+  Covered lines: 818
+  Uncovered lines: 8
+  Coverable lines: 826
+  Total lines: 1635
+  Branch coverage: 100% (234 of 234)
+  Covered branches: 234
+  Total branches: 234
+  Method coverage: 100% (56 of 56)
+  Full method coverage: 87.5% (49 of 56)
+  Covered methods: 56
+  Fully covered methods: 49
+  Total methods: 56
+
+KooliProjekt.Application                                                                 99%
+  KooliProjekt.Application.Features.Clients.DeleteClientCommandHandler                  100%
+  KooliProjekt.Application.Features.Clients.GetClientsQueryHandler                      100%
+  KooliProjekt.Application.Features.Clients.ListClientsQueryHandler                    97.1%
+  KooliProjekt.Application.Features.Clients.SaveClientsCommandHandler                   100%
+  KooliProjekt.Application.Features.EventFiles.DeleteEventFileCommandHandler            100%
+  KooliProjekt.Application.Features.EventFiles.GetEventFileQueryHandler                 100%
+  KooliProjekt.Application.Features.EventFiles.ListEventFilesQueryHandler                97%
+  KooliProjekt.Application.Features.EventFiles.SaveEventFileCommandHandler              100%
+  KooliProjekt.Application.Features.Events.DeleteEventCommandHandler                    100%
+  KooliProjekt.Application.Features.Events.GetEventQueryHandler                         100%
+  KooliProjekt.Application.Features.Events.ListEventsQueryHandler                      97.1%
+  KooliProjekt.Application.Features.Events.SaveEventCommandHandler                      100%
+  KooliProjekt.Application.Features.EventSchedules.DeleteEventScheduleCommandHandler    100%
+  KooliProjekt.Application.Features.EventSchedules.GetEventScheduleQueryHandler         100%
+  KooliProjekt.Application.Features.EventSchedules.ListEventSchedulesQueryHandler        97%
+  KooliProjekt.Application.Features.EventSchedules.SaveEventScheduleCommandHandler      100%
+  KooliProjekt.Application.Features.Invoices.DeleteInvoiceCommandHandler                100%
+  KooliProjekt.Application.Features.Invoices.GetInvoiceQueryHandler                     100%
+  KooliProjekt.Application.Features.Invoices.ListInvoicesQueryHandler                  93.9%
+  KooliProjekt.Application.Features.Invoices.SaveInvoiceCommandHandler                  100%
+  KooliProjekt.Application.Features.Payments.DeletePaymentCommandHandler                100%
+  KooliProjekt.Application.Features.Payments.GetPaymentQueryHandler                     100%
+  KooliProjekt.Application.Features.Payments.ListPaymentsQueryHandler                    97%
+  KooliProjekt.Application.Features.Payments.SavePaymentCommandHandler                  100%
+  KooliProjekt.Application.Features.SystemUsers.DeleteSystemUserCommandHandler          100%
+  KooliProjekt.Application.Features.SystemUsers.GetSystemUserQueryHandler               100%
+  KooliProjekt.Application.Features.SystemUsers.ListSystemUsersQueryHandler              97%
+  KooliProjekt.Application.Features.SystemUsers.SaveSystemUserCommandHandler            100%

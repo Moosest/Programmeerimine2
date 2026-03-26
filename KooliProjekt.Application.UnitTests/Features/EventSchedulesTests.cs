@@ -131,6 +131,23 @@ namespace KooliProjekt.Application.UnitTests.Features
         }
 
         [Fact]
+        public async Task List_should_filter_by_search()
+        {
+            await DbContext.EventSchedules.AddAsync(new EventSchedule { EventId = 1, StartTime = DateTime.Now, FilePath = "/sched/morning.txt", FileName = "morning.txt", UploadedAt = DateTime.Now });
+            await DbContext.EventSchedules.AddAsync(new EventSchedule { EventId = 1, StartTime = DateTime.Now, FilePath = "/sched/evening.txt", FileName = "evening.txt", UploadedAt = DateTime.Now });
+            await DbContext.SaveChangesAsync();
+
+            var handler = new ListEventSchedulesQueryHandler(DbContext);
+            var query = new ListEventSchedulesQuery { Page = 1, PageSize = 10, Search = "morning" };
+
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            Assert.NotNull(result.Value);
+            Assert.Single(result.Value.Results);
+            Assert.Equal("morning.txt", result.Value.Results.First().FileName);
+        }
+
+        [Fact]
         public void Delete_should_throw_when_dbcontext_is_null()
         {
             var dbContext = (ApplicationDbContext)null;

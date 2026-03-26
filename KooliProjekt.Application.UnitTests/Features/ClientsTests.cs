@@ -130,6 +130,23 @@ namespace KooliProjekt.Application.UnitTests.Features
         }
 
         [Fact]
+        public async Task List_should_filter_by_search()
+        {
+            await DbContext.Clients.AddAsync(new Client { Name = "Alice", Email = "alice@test.com", Phone = "111", Address = "A st", Discount = 0.1m });
+            await DbContext.Clients.AddAsync(new Client { Name = "Bob", Email = "bob@test.com", Phone = "222", Address = "B st", Discount = 0.1m });
+            await DbContext.SaveChangesAsync();
+
+            var handler = new ListClientsQueryHandler(DbContext);
+            var query = new ListClientsQuery { Page = 1, PageSize = 10, Search = "alice" };
+
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            Assert.NotNull(result.Value);
+            Assert.Single(result.Value.Results);
+            Assert.Equal("Alice", result.Value.Results.First().Name);
+        }
+
+        [Fact]
         public void Delete_should_throw_when_dbcontext_is_null()
         {
             var dbContext = (ApplicationDbContext)null;

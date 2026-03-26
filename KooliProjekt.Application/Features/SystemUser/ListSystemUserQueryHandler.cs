@@ -49,8 +49,16 @@ namespace KooliProjekt.Application.Features.SystemUsers
 
             var result = new OperationResult<PagedResult<SystemUser>>();
 
-            result.Value = await _dbContext
-                .SystemUsers
+            var query = _dbContext.SystemUsers.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(request.Search))
+            {
+                query = query.Where(su =>
+                    su.Username.Contains(request.Search) ||
+                    su.Role.Contains(request.Search));
+            }
+
+            result.Value = await query
                 .OrderBy(su => su.Username)
                 .GetPagedAsync(request.Page, request.PageSize);
 

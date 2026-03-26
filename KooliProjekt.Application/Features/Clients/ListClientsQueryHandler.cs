@@ -49,8 +49,17 @@ namespace KooliProjekt.Application.Features.Clients
 
             var result = new OperationResult<PagedResult<Client>>();
 
-            result.Value = await _dbContext
-                .Clients
+            var query = _dbContext.Clients.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(request.Search))
+            {
+                query = query.Where(c =>
+                    c.Name.Contains(request.Search) ||
+                    c.Email.Contains(request.Search) ||
+                    c.Phone.Contains(request.Search));
+            }
+
+            result.Value = await query
                 .OrderBy(c => c.Name)
                 .GetPagedAsync(request.Page, request.PageSize);
 

@@ -130,6 +130,23 @@ namespace KooliProjekt.Application.UnitTests.Features
         }
 
         [Fact]
+        public async Task List_should_filter_by_search()
+        {
+            await DbContext.EventFiles.AddAsync(new EventFile { EventId = 1, FilePath = "/docs/agenda.pdf", FileName = "agenda.pdf", UploadedAt = DateTime.Now });
+            await DbContext.EventFiles.AddAsync(new EventFile { EventId = 1, FilePath = "/docs/poster.png", FileName = "poster.png", UploadedAt = DateTime.Now });
+            await DbContext.SaveChangesAsync();
+
+            var handler = new ListEventFilesQueryHandler(DbContext);
+            var query = new ListEventFilesQuery { Page = 1, PageSize = 10, Search = "agenda" };
+
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            Assert.NotNull(result.Value);
+            Assert.Single(result.Value.Results);
+            Assert.Equal("agenda.pdf", result.Value.Results.First().FileName);
+        }
+
+        [Fact]
         public void Delete_should_throw_when_dbcontext_is_null()
         {
             var dbContext = (ApplicationDbContext)null;

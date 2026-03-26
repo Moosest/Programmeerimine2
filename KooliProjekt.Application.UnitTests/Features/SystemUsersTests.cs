@@ -131,6 +131,23 @@ namespace KooliProjekt.Application.UnitTests.Features
         }
 
         [Fact]
+        public async Task List_should_filter_by_search()
+        {
+            await DbContext.SystemUsers.AddAsync(new SystemUser { Username = "admin.user", PasswordHash = "h", Role = "Admin", CreatedAt = DateTime.Now });
+            await DbContext.SystemUsers.AddAsync(new SystemUser { Username = "guest.user", PasswordHash = "h", Role = "Guest", CreatedAt = DateTime.Now });
+            await DbContext.SaveChangesAsync();
+
+            var handler = new ListSystemUsersQueryHandler(DbContext);
+            var query = new ListSystemUsersQuery { Page = 1, PageSize = 10, Search = "admin" };
+
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            Assert.NotNull(result.Value);
+            Assert.Single(result.Value.Results);
+            Assert.Equal("admin.user", result.Value.Results.First().Username);
+        }
+
+        [Fact]
         public void Delete_should_throw_when_dbcontext_is_null()
         {
             var dbContext = (ApplicationDbContext)null;

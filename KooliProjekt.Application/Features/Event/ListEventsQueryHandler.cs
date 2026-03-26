@@ -49,8 +49,17 @@ namespace KooliProjekt.Application.Features.Events
 
             var result = new OperationResult<PagedResult<Event>>();
 
-            result.Value = await _dbContext
-                .Events
+            var query = _dbContext.Events.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(request.Search))
+            {
+                query = query.Where(e =>
+                    e.Name.Contains(request.Search) ||
+                    e.Location.Contains(request.Search) ||
+                    e.Description.Contains(request.Search));
+            }
+
+            result.Value = await query
                 .OrderBy(e => e.Name)
                 .GetPagedAsync(request.Page, request.PageSize);
 

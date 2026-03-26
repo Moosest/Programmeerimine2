@@ -130,6 +130,23 @@ namespace KooliProjekt.Application.UnitTests.Features
         }
 
         [Fact]
+        public async Task List_should_filter_by_search()
+        {
+            await DbContext.Events.AddAsync(new Event { Name = "Rock Festival", Description = "Music", Location = "Tallinn", Summary = "S", StartTime = DateTime.Now, MaxSeats = 100, Price = 20, IsActive = true });
+            await DbContext.Events.AddAsync(new Event { Name = "Tech Meetup", Description = "Talks", Location = "Tartu", Summary = "S", StartTime = DateTime.Now, MaxSeats = 50, Price = 0, IsActive = true });
+            await DbContext.SaveChangesAsync();
+
+            var handler = new ListEventsQueryHandler(DbContext);
+            var query = new ListEventsQuery { Page = 1, PageSize = 10, Search = "Rock" };
+
+            var result = await handler.Handle(query, CancellationToken.None);
+
+            Assert.NotNull(result.Value);
+            Assert.Single(result.Value.Results);
+            Assert.Equal("Rock Festival", result.Value.Results.First().Name);
+        }
+
+        [Fact]
         public void Delete_should_throw_when_dbcontext_is_null()
         {
             var dbContext = (ApplicationDbContext)null;
