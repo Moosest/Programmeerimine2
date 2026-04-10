@@ -11,7 +11,14 @@ namespace KooliProjekt.WindowsForms
             // To customize application configuration such as set high DPI settings or default font,
             // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
-            System.Windows.Forms.Application.Run(new Form1());
+
+            using var httpClient = new HttpClient
+            {
+                BaseAddress = new Uri("http://localhost:5086/")
+            };
+            var clientsApiClient = new ClientsApiClient(httpClient);
+
+            System.Windows.Forms.Application.Run(new Form1(clientsApiClient));
         }
     }
 }

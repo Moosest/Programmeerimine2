@@ -162,16 +162,6 @@ namespace KooliProjekt.Application.Data
             }
 
             _dbContext.SaveChanges();
-
-            // Reset identity/sequence for PostgreSQL tables
-            _dbContext.Database.ExecuteSqlRaw("ALTER SEQUENCE \"Clients_Id_seq\" RESTART WITH 1;");
-            _dbContext.Database.ExecuteSqlRaw("ALTER SEQUENCE \"Events_Id_seq\" RESTART WITH 1;");
-            _dbContext.Database.ExecuteSqlRaw("ALTER SEQUENCE \"EventFiles_Id_seq\" RESTART WITH 1;");
-            _dbContext.Database.ExecuteSqlRaw("ALTER SEQUENCE \"EventSchedules_Id_seq\" RESTART WITH 1;");
-            _dbContext.Database.ExecuteSqlRaw("ALTER SEQUENCE \"Invoices_Id_seq\" RESTART WITH 1;");
-            _dbContext.Database.ExecuteSqlRaw("ALTER SEQUENCE \"InvoiceLines_Id_seq\" RESTART WITH 1;");
-            _dbContext.Database.ExecuteSqlRaw("ALTER SEQUENCE \"Payments_Id_seq\" RESTART WITH 1;");
-            _dbContext.Database.ExecuteSqlRaw("ALTER SEQUENCE \"SystemUsers_Id_seq\" RESTART WITH 1;");
         }
     }
 }
