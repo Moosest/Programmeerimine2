@@ -4,39 +4,39 @@ using KooliProjekt.WindowsForms.Api;
 
 namespace KooliProjekt.WindowsForms
 {
-    public class ClientsApiClient : IClientsApiClient
+    public class PaymentsApiClient : IPaymentsApiClient
     {
         private readonly string _baseUrl;
         private readonly HttpClient _client;
 
-        public ClientsApiClient(HttpClient httpClient)
+        public PaymentsApiClient(HttpClient httpClient)
         {
-            _baseUrl = "api/Clients/";
+            _baseUrl = "api/Payments/";
             _client = httpClient;
         }
 
-        public async Task<OperationResult<PagedResult<Client>>> List(int page, int pageSize)
+        public async Task<OperationResult<PagedResult<Payment>>> List(int page, int pageSize)
         {
             var url = _baseUrl + "List?page=" + page + "&pageSize=" + pageSize;
             using var request = new HttpRequestMessage(HttpMethod.Get, url);
             using var response = await _client.SendAsync(request);
             var body = await response.Content.ReadAsStringAsync();
 
-            var result = JsonSerializer.Deserialize<OperationResult<PagedResult<Client>>>(body, new JsonSerializerOptions
+            var result = JsonSerializer.Deserialize<OperationResult<PagedResult<Payment>>>(body, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             });
 
-            return result ?? new OperationResult<PagedResult<Client>>();
+            return result ?? new OperationResult<PagedResult<Payment>>();
         }
 
-        public async Task<OperationResult> Save(Client client)
+        public async Task<OperationResult> Save(Payment payment)
         {
             var url = _baseUrl + "Save";
 
             using var request = new HttpRequestMessage(HttpMethod.Post, url)
             {
-                Content = JsonContent.Create(client)
+                Content = JsonContent.Create(payment)
             };
             using var response = await _client.SendAsync(request);
             var body = await response.Content.ReadAsStringAsync();

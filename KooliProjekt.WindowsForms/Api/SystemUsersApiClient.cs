@@ -4,39 +4,39 @@ using KooliProjekt.WindowsForms.Api;
 
 namespace KooliProjekt.WindowsForms
 {
-    public class ClientsApiClient : IClientsApiClient
+    public class SystemUsersApiClient : ISystemUsersApiClient
     {
         private readonly string _baseUrl;
         private readonly HttpClient _client;
 
-        public ClientsApiClient(HttpClient httpClient)
+        public SystemUsersApiClient(HttpClient httpClient)
         {
-            _baseUrl = "api/Clients/";
+            _baseUrl = "api/SystemUsers/";
             _client = httpClient;
         }
 
-        public async Task<OperationResult<PagedResult<Client>>> List(int page, int pageSize)
+        public async Task<OperationResult<PagedResult<SystemUser>>> List(int page, int pageSize)
         {
             var url = _baseUrl + "List?page=" + page + "&pageSize=" + pageSize;
             using var request = new HttpRequestMessage(HttpMethod.Get, url);
             using var response = await _client.SendAsync(request);
             var body = await response.Content.ReadAsStringAsync();
 
-            var result = JsonSerializer.Deserialize<OperationResult<PagedResult<Client>>>(body, new JsonSerializerOptions
+            var result = JsonSerializer.Deserialize<OperationResult<PagedResult<SystemUser>>>(body, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             });
 
-            return result ?? new OperationResult<PagedResult<Client>>();
+            return result ?? new OperationResult<PagedResult<SystemUser>>();
         }
 
-        public async Task<OperationResult> Save(Client client)
+        public async Task<OperationResult> Save(SystemUser systemUser)
         {
             var url = _baseUrl + "Save";
 
             using var request = new HttpRequestMessage(HttpMethod.Post, url)
             {
-                Content = JsonContent.Create(client)
+                Content = JsonContent.Create(systemUser)
             };
             using var response = await _client.SendAsync(request);
             var body = await response.Content.ReadAsStringAsync();

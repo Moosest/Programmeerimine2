@@ -1,4 +1,6 @@
-namespace KooliProjekt.WindowsForms
+using KooliProjekt.WindowsForms;
+
+namespace KooliProjekt.WindowsForms.Api
 {
     public interface IClientsApiClient
     {
