@@ -21,7 +21,7 @@ namespace KooliProjekt.WebAPI
             // Add services to the container.
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
             {
-                options.UseNpgsql(connectionString);
+                options.UseSqlServer(connectionString);
             });
 
             builder.Services.AddControllers();
