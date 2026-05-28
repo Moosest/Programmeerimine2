@@ -17,10 +17,16 @@ namespace KooliProjekt.WindowsForms
 
         public async Task<OperationResult<PagedResult<Client>>> List(int page, int pageSize)
         {
-            var url = _baseUrl + "List?page=" + page + "&pageSize=" + pageSize;
+            var url = _baseUrl + "?page=" + page + "&pageSize=" + pageSize;
             using var request = new HttpRequestMessage(HttpMethod.Get, url);
             using var response = await _client.SendAsync(request);
             var body = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode || string.IsNullOrWhiteSpace(body))
+            {
+                return new OperationResult<PagedResult<Client>>()
+                    .AddError($"Request failed: {(int)response.StatusCode} {response.ReasonPhrase}");
+            }
 
             var result = JsonSerializer.Deserialize<OperationResult<PagedResult<Client>>>(body, new JsonSerializerOptions
             {
