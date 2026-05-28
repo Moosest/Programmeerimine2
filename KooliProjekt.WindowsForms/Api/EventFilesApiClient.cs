@@ -1,68 +1,12 @@
-using System.Net.Http.Json;
-using System.Text.Json;
 using KooliProjekt.WindowsForms.Api;
 
 namespace KooliProjekt.WindowsForms
 {
-    public class EventFilesApiClient : IEventFilesApiClient
+    public class EventFilesApiClient : CrudApiClientBase<EventFile>, IEventFilesApiClient
     {
-        private readonly string _baseUrl;
-        private readonly HttpClient _client;
-
         public EventFilesApiClient(HttpClient httpClient)
+            : base(httpClient, "api/EventFiles/")
         {
-            _baseUrl = "api/EventFiles/";
-            _client = httpClient;
-        }
-
-        public async Task<OperationResult<PagedResult<EventFile>>> List(int page, int pageSize)
-        {
-            var url = _baseUrl + "List?page=" + page + "&pageSize=" + pageSize;
-            using var request = new HttpRequestMessage(HttpMethod.Get, url);
-            using var response = await _client.SendAsync(request);
-            var body = await response.Content.ReadAsStringAsync();
-
-            var result = JsonSerializer.Deserialize<OperationResult<PagedResult<EventFile>>>(body, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
-
-            return result ?? new OperationResult<PagedResult<EventFile>>();
-        }
-
-        public async Task<OperationResult> Save(EventFile eventFile)
-        {
-            var url = _baseUrl + "Save";
-
-            using var request = new HttpRequestMessage(HttpMethod.Post, url)
-            {
-                Content = JsonContent.Create(eventFile)
-            };
-            using var response = await _client.SendAsync(request);
-            var body = await response.Content.ReadAsStringAsync();
-
-            var result = JsonSerializer.Deserialize<OperationResult>(body, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
-
-            return result ?? new OperationResult();
-        }
-
-        public async Task<OperationResult> Delete(int id)
-        {
-            var url = _baseUrl + "Delete?id=" + id;
-
-            using var request = new HttpRequestMessage(HttpMethod.Delete, url);
-            using var response = await _client.SendAsync(request);
-            var body = await response.Content.ReadAsStringAsync();
-
-            var result = JsonSerializer.Deserialize<OperationResult>(body, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
-
-            return result ?? new OperationResult();
         }
     }
 }

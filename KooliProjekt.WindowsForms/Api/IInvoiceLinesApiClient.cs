@@ -2,10 +2,7 @@ using KooliProjekt.WindowsForms;
 
 namespace KooliProjekt.WindowsForms.Api
 {
-    public interface IInvoiceLinesApiClient
+    public interface IInvoiceLinesApiClient : ICrudApiClient<InvoiceLine>
     {
-        Task<OperationResult<PagedResult<InvoiceLine>>> List(int page, int pageSize);
-        Task<OperationResult> Save(InvoiceLine invoiceLine);
-        Task<OperationResult> Delete(int id);
     }
 }

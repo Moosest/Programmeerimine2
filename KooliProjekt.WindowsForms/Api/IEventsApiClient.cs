@@ -2,10 +2,7 @@ using KooliProjekt.WindowsForms;
 
 namespace KooliProjekt.WindowsForms.Api
 {
-    public interface IEventsApiClient
+    public interface IEventsApiClient : ICrudApiClient<Event>
     {
-        Task<OperationResult<PagedResult<Event>>> List(int page, int pageSize);
-        Task<OperationResult> Save(Event eventItem);
-        Task<OperationResult> Delete(int id);
     }
 }
