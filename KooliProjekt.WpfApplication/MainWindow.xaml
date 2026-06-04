@@ -1,0 +1,72 @@
+﻿<Window x:Class="KooliProjekt.WpfApplication.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Clients" Height="520" Width="980" MinHeight="520" MinWidth="980">
+    <Grid Margin="12">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*" />
+            <ColumnDefinition Width="16" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <DataGrid x:Name="clientsGrid"
+                  Grid.Column="0"
+                  AutoGenerateColumns="True"
+                  CanUserAddRows="False"
+                  IsReadOnly="True"
+                  SelectionMode="Single"
+                  SelectionChanged="clientsGrid_SelectionChanged"
+                  Margin="0,0,0,0" />
+
+        <Border Grid.Column="2" BorderBrush="#DDDDDD" BorderThickness="1" Padding="14" CornerRadius="4">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="8" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="8" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="8" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="8" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="8" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="20" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="10" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="10" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Text="Id" />
+                <TextBox x:Name="idTextBox" Grid.Row="2" IsReadOnly="True" Text="0" />
+
+                <TextBlock Grid.Row="4" Text="Name" />
+                <TextBox x:Name="nameTextBox" Grid.Row="6" />
+
+                <TextBlock Grid.Row="8" Text="Email" />
+                <TextBox x:Name="emailTextBox" Grid.Row="10" />
+
+                <TextBlock Grid.Row="12" Text="Phone" />
+                <TextBox x:Name="phoneTextBox" Grid.Row="14" />
+
+                <TextBlock Grid.Row="16" Text="Address" />
+                <TextBox x:Name="addressTextBox" Grid.Row="17" Margin="0,6,0,0" Height="24" VerticalAlignment="Top" />
+
+                <StackPanel Grid.Row="17" VerticalAlignment="Bottom" Margin="0,0,0,0">
+                    <TextBlock Text="Discount" Margin="0,12,0,6" />
+                    <TextBox x:Name="discountTextBox" />
+                    <Button x:Name="saveButton" Content="Salvesta" Margin="0,16,0,0" Height="30" />
+                    <Button x:Name="addButton" Content="Lisa uus" Margin="0,10,0,0" Height="30" />
+                    <Button x:Name="deleteButton" Content="Kustuta valitud" Margin="0,10,0,0" Height="30" />
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
