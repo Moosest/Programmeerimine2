@@ -1,3 +1,5 @@
+using KooliProjekt.WindowsForms.Api;
+
 namespace KooliProjekt.WindowsForms
 {
     internal static class Program
@@ -17,8 +19,10 @@ namespace KooliProjekt.WindowsForms
                 BaseAddress = new Uri("http://localhost:5086/")
             };
             var clientsApiClient = new ClientsApiClient(httpClient);
+            var view = new Form1();
+            var presenter = new MainViewPresenter(clientsApiClient, view);
 
-            System.Windows.Forms.Application.Run(new Form1(clientsApiClient));
+            System.Windows.Forms.Application.Run(view);
         }
     }
 }

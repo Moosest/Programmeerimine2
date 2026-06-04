@@ -1,21 +1,88 @@
-using System.Net.Http.Json;
-using KooliProjekt.WindowsForms.Api;
+using System.ComponentModel;
 
 namespace KooliProjekt.WindowsForms
 {
-    public partial class Form1 : Form
+    public partial class Form1 : Form, IMainView
     {
-        private readonly IClientsApiClient _clientsApiClient;
+        private MainViewPresenter _mainViewPresenter;
+        private Client _selectedItem;
 
-        public Form1(IClientsApiClient clientsApiClient)
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public IList<Client> DataSource
         {
-            _clientsApiClient = clientsApiClient;
+            get { return (IList<Client>)dataGridView1.DataSource; }
+            set { dataGridView1.DataSource = value; }
+        }
+
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public Client SelectedItem
+        {
+            get
+            {
+                return dataGridView1.CurrentRow?.DataBoundItem as Client;
+            }
+            set
+            {
+                _selectedItem = value;
+            }
+        }
+
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public int CurrentId
+        {
+            get { return int.TryParse(textBoxId.Text, out var id) ? id : 0; }
+            set { textBoxId.Text = value.ToString(); }
+        }
+
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public string CurrentName
+        {
+            get { return textBoxName.Text; }
+            set { textBoxName.Text = value; }
+        }
+
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public string CurrentEmail
+        {
+            get { return textBoxEmail.Text; }
+            set { textBoxEmail.Text = value; }
+        }
+
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public string CurrentPhone
+        {
+            get { return textBoxPhone.Text; }
+            set { textBoxPhone.Text = value; }
+        }
+
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public string CurrentAddress
+        {
+            get { return textBoxAddress.Text; }
+            set { textBoxAddress.Text = value; }
+        }
+
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public string CurrentDiscount
+        {
+            get { return textBoxDiscount.Text; }
+            set { textBoxDiscount.Text = value; }
+        }
+
+        public Form1()
+        {
             InitializeComponent();
+            dataGridView1.SelectionChanged += DataGridView1_SelectionChanged;
+        }
+
+        public void SetPresenter(MainViewPresenter presenter)
+        {
+            _mainViewPresenter = presenter;
         }
 
         private async void Form1_Load(object sender, EventArgs e)
         {
-            await LoadData();
+            await _mainViewPresenter.LoadData();
         }
 
         private static string BuildErrorMessage(OperationResult response)
@@ -39,70 +106,37 @@ namespace KooliProjekt.WindowsForms
                 : "Operation failed.";
         }
 
-        private async Task LoadData()
+        public void ShowError(string message, OperationResult result)
         {
-            var response = await _clientsApiClient.List(1, 10);
+            var errorMessage = message;
+            var details = BuildErrorMessage(result);
 
-            if (response?.HasErrors == true)
+            if (!string.IsNullOrWhiteSpace(details))
             {
-                MessageBox.Show(BuildErrorMessage(response));
-                return;
+                errorMessage += Environment.NewLine + details;
             }
 
-            dataGridView1.DataSource = response?.Value?.Results;
+            MessageBox.Show(errorMessage, "Viga", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
-        private async void buttonAdd_Click(object sender, EventArgs e)
+        private async void buttonSave_Click(object sender, EventArgs e)
         {
-            if (!decimal.TryParse(textBoxDiscount.Text, out var discount))
-            {
-                MessageBox.Show("Discount peab olema number.");
-                return;
-            }
-
-            var client = new Client
-            {
-                Name = textBoxName.Text,
-                Email = textBoxEmail.Text,
-                Phone = textBoxPhone.Text,
-                Address = textBoxAddress.Text,
-                Discount = discount
-            };
-
-            var response = await _clientsApiClient.Save(client);
-
-            if (response?.HasErrors == true)
-            {
-                MessageBox.Show(BuildErrorMessage(response));
-                return;
-            }
-
-            textBoxName.Clear();
-            textBoxEmail.Clear();
-            textBoxPhone.Clear();
-            textBoxAddress.Clear();
-            textBoxDiscount.Clear();
-
-            await LoadData();
+            await _mainViewPresenter.Save();
         }
 
         private async void buttonDelete_Click(object sender, EventArgs e)
         {
-            if (dataGridView1.CurrentRow?.DataBoundItem is not Client client)
-            {
-                MessageBox.Show("Vali kustutatav rida.");
-                return;
-            }
+            await _mainViewPresenter.Delete();
+        }
 
-            var response = await _clientsApiClient.Delete(client.Id);
+        private void DataGridView1_SelectionChanged(object sender, EventArgs e)
+        {
+            _mainViewPresenter.SetSelection(SelectedItem);
+        }
 
-            if (response?.HasErrors == true)
-            {
-                MessageBox.Show(BuildErrorMessage(response));
-                return;
-            }
-
-            await LoadData();
+        private void buttonAdd_Click(object sender, EventArgs e)
+        {
+            _mainViewPresenter.AddNew();
         }
     }
 }
