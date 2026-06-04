@@ -5,7 +5,6 @@ namespace KooliProjekt.WindowsForms
     public partial class Form1 : Form, IMainView
     {
         private MainViewPresenter _mainViewPresenter;
-        private Client _selectedItem;
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public IList<Client> DataSource
@@ -23,7 +22,7 @@ namespace KooliProjekt.WindowsForms
             }
             set
             {
-                _selectedItem = value;
+                // Selection is driven by DataGridView interaction.
             }
         }
 
@@ -78,6 +77,9 @@ namespace KooliProjekt.WindowsForms
         public void SetPresenter(MainViewPresenter presenter)
         {
             _mainViewPresenter = presenter;
+            buttonSave.Click += _mainViewPresenter.SaveCommand_Click;
+            buttonDelete.Click += _mainViewPresenter.DeleteCommand_Click;
+            buttonAdd.Click += _mainViewPresenter.AddCommand_Click;
         }
 
         private async void Form1_Load(object sender, EventArgs e)
@@ -119,24 +121,16 @@ namespace KooliProjekt.WindowsForms
             MessageBox.Show(errorMessage, "Viga", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
-        private async void buttonSave_Click(object sender, EventArgs e)
+        public bool ConfirmDelete()
         {
-            await _mainViewPresenter.Save();
-        }
-
-        private async void buttonDelete_Click(object sender, EventArgs e)
-        {
-            await _mainViewPresenter.Delete();
+            var message = "Oled kindel, et soovid kustutada " + CurrentName + "?";
+            var answer = MessageBox.Show(message, "Kustutamine", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            return answer == DialogResult.Yes;
         }
 
         private void DataGridView1_SelectionChanged(object sender, EventArgs e)
         {
             _mainViewPresenter.SetSelection(SelectedItem);
-        }
-
-        private void buttonAdd_Click(object sender, EventArgs e)
-        {
-            _mainViewPresenter.AddNew();
         }
     }
 }

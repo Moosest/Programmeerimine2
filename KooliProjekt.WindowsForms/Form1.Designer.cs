@@ -162,7 +162,6 @@
             buttonSave.TabIndex = 13;
             buttonSave.Text = "Salvesta";
             buttonSave.UseVisualStyleBackColor = true;
-            buttonSave.Click += buttonSave_Click;
             // 
             // buttonAdd
             // 
@@ -172,7 +171,6 @@
             buttonAdd.TabIndex = 14;
             buttonAdd.Text = "Lisa uus";
             buttonAdd.UseVisualStyleBackColor = true;
-            buttonAdd.Click += buttonAdd_Click;
             // 
             // buttonDelete
             // 
@@ -182,7 +180,6 @@
             buttonDelete.TabIndex = 15;
             buttonDelete.Text = "Kustuta valitud";
             buttonDelete.UseVisualStyleBackColor = true;
-            buttonDelete.Click += buttonDelete_Click;
             // 
             // Form1
             // 

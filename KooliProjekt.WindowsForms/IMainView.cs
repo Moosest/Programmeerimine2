@@ -30,5 +30,6 @@ namespace KooliProjekt.WindowsForms
 
         void SetPresenter(MainViewPresenter presenter);
         void ShowError(string message, OperationResult result);
+        bool ConfirmDelete();
     }
 }

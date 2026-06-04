@@ -34,6 +34,21 @@ namespace KooliProjekt.WindowsForms
             SetSelection(null);
         }
 
+        public void AddCommand_Click(object sender, EventArgs e)
+        {
+            AddNew();
+        }
+
+        public async void SaveCommand_Click(object sender, EventArgs e)
+        {
+            await Save();
+        }
+
+        public async void DeleteCommand_Click(object sender, EventArgs e)
+        {
+            await Delete();
+        }
+
         public async Task Save()
         {
             if (!decimal.TryParse(_mainView.CurrentDiscount, out var discount))
@@ -68,6 +83,11 @@ namespace KooliProjekt.WindowsForms
             if (_selectedClient == null)
             {
                 _mainView.ShowError("Viga kustutamisel", new OperationResult().AddError("Vali kustutatav rida."));
+                return;
+            }
+
+            if (!_mainView.ConfirmDelete())
+            {
                 return;
             }
 
