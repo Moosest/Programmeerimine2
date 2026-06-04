@@ -1,31 +1,28 @@
+using System.Collections.ObjectModel;
+
 namespace KooliProjekt.WpfApplication
 {
-    public class MainWindowViewModel
+    public class MainWindowViewModel : NotifyPropertyChangedBase
     {
         private readonly IClientsApiClient _clientsApiClient;
+        private readonly ObservableCollection<Client> _data;
+        private Client? _selectedItem;
 
-        public IList<Client> DataSource { get; private set; }
-        public Client? SelectedItem { get; private set; }
-
-        public int CurrentId { get; private set; }
-        public string CurrentName { get; private set; }
-        public string CurrentEmail { get; private set; }
-        public string CurrentPhone { get; private set; }
-        public string CurrentAddress { get; private set; }
-        public string CurrentDiscount { get; private set; }
+        public MainWindowViewModel()
+            : this(new ClientsApiClient(new HttpClient
+            {
+                BaseAddress = new Uri("http://localhost:5086/")
+            }))
+        {
+        }
 
         public MainWindowViewModel(IClientsApiClient clientsApiClient)
         {
             _clientsApiClient = clientsApiClient;
-            DataSource = new List<Client>();
-            CurrentName = string.Empty;
-            CurrentEmail = string.Empty;
-            CurrentPhone = string.Empty;
-            CurrentAddress = string.Empty;
-            CurrentDiscount = string.Empty;
+            _data = new ObservableCollection<Client>();
         }
 
-        public async Task<OperationResult> LoadData()
+        public async Task<OperationResult> LoadDataAsync()
         {
             var response = await _clientsApiClient.List(1, 10);
             if (response?.HasErrors == true)
@@ -33,31 +30,38 @@ namespace KooliProjekt.WpfApplication
                 return response;
             }
 
-            DataSource = response?.Value?.Results ?? new List<Client>();
+            _data.Clear();
+
+            if (response?.Value?.Results != null)
+            {
+                foreach (var item in response.Value.Results)
+                {
+                    _data.Add(item);
+                }
+            }
+
             return new OperationResult();
         }
 
-        public void SetSelection(Client? selectedClient)
+        public ObservableCollection<Client> Data
         {
-            SelectedItem = selectedClient;
-
-            if (selectedClient == null)
+            get
             {
-                CurrentId = 0;
-                CurrentName = string.Empty;
-                CurrentEmail = string.Empty;
-                CurrentPhone = string.Empty;
-                CurrentAddress = string.Empty;
-                CurrentDiscount = string.Empty;
-                return;
+                return _data;
             }
+        }
 
-            CurrentId = selectedClient.Id;
-            CurrentName = selectedClient.Name;
-            CurrentEmail = selectedClient.Email;
-            CurrentPhone = selectedClient.Phone;
-            CurrentAddress = selectedClient.Address;
-            CurrentDiscount = selectedClient.Discount.ToString();
+        public Client? SelectedItem
+        {
+            get
+            {
+                return _selectedItem;
+            }
+            set
+            {
+                _selectedItem = value;
+                NotifyPropertyChanged();
+            }
         }
     }
 }
