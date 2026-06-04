@@ -63,9 +63,14 @@
                 <StackPanel Grid.Row="17" VerticalAlignment="Bottom" Margin="0,0,0,0">
                     <TextBlock Text="Discount" Margin="0,12,0,6" />
                     <TextBox Text="{Binding SelectedItem.Discount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                    <Button x:Name="saveButton" Content="Salvesta" Margin="0,16,0,0" Height="30" />
-                    <Button x:Name="addButton" Content="Lisa uus" Margin="0,10,0,0" Height="30" />
-                    <Button x:Name="deleteButton" Content="Kustuta valitud" Margin="0,10,0,0" Height="30" />
+                    <Button x:Name="saveButton" Content="Salvesta" Margin="0,16,0,0" Height="30"
+                            Command="{Binding SaveCommand}"
+                            CommandParameter="{Binding SelectedItem}" />
+                    <Button x:Name="addButton" Content="Lisa uus" Margin="0,10,0,0" Height="30"
+                            Command="{Binding AddNewCommand}" />
+                    <Button x:Name="deleteButton" Content="Kustuta valitud" Margin="0,10,0,0" Height="30"
+                            Command="{Binding DeleteCommand}"
+                            CommandParameter="{Binding SelectedItem}" />
                 </StackPanel>
             </Grid>
         </Border>

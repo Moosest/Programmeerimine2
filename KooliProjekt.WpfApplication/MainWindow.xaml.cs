@@ -6,18 +6,13 @@ namespace KooliProjekt.WpfApplication
         public MainWindow()
         {
             InitializeComponent();
+
             var viewModel = new MainWindowViewModel();
             DataContext = viewModel;
+
             Loaded += async (s, e) =>
             {
-                var result = await viewModel.LoadDataAsync();
-
-                if (result.HasErrors)
-                {
-                    var errors = result.Errors == null ? string.Empty : string.Join(Environment.NewLine, result.Errors);
-                    MessageBox.Show(errors, "Viga", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
-                }
+                await viewModel.LoadDataAsync();
 
                 if (viewModel.Data.Count > 0)
                 {
