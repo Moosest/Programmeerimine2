@@ -1,0 +1,8 @@
+<Project>
+
+  <!-- Allows building the Windows-only projects (WinForms, WPF) on Linux/macOS. Has no effect on Windows. -->
+  <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+  </PropertyGroup>
+
+</Project>

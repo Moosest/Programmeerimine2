@@ -399,3 +399,6 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 /KooliProjekt.Application.UnitTests/BuildReports
+
+# Opetaja naide
+/op
