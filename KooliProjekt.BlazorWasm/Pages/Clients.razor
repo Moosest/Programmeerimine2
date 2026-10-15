@@ -1,0 +1,92 @@
+@page "/clients"
+@inject IApiClient apiClient
+
+<PageTitle>Clients</PageTitle>
+
+<h1>Clients</h1>
+
+@if (errors != null)
+{
+    <div class="alert alert-danger">
+        @foreach (var error in errors)
+        {
+            <div>@error</div>
+        }
+    </div>
+}
+else if (clients == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Address</th>
+                <th>Discount</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var client in clients)
+            {
+                <tr>
+                    <td>@client.Id</td>
+                    <td>@client.Name</td>
+                    <td>@client.Email</td>
+                    <td>@client.Phone</td>
+                    <td>@client.Address</td>
+                    <td>@client.Discount</td>
+                    <td>
+                        <button class="btn btn-success">Edit</button>
+                        <button class="btn btn-danger">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private IList<Client> clients;
+    private List<string> errors;
+
+    protected override async Task OnInitializedAsync()
+    {
+        OperationResult<PagedResult<Client>> result;
+        try
+        {
+            result = await apiClient.List(1, 100);
+        }
+        catch (HttpRequestException ex)
+        {
+            errors = new List<string> { "Cannot reach the WebAPI: " + ex.Message };
+            return;
+        }
+
+        if (result == null || result.HasErrors)
+        {
+            errors = new List<string>();
+            if (result?.Errors != null)
+            {
+                errors.AddRange(result.Errors);
+            }
+            if (result?.PropertyErrors != null)
+            {
+                errors.AddRange(result.PropertyErrors.Select(e => e.Key + ": " + e.Value));
+            }
+            if (errors.Count == 0)
+            {
+                errors.Add("Failed to load clients");
+            }
+            return;
+        }
+
+        clients = result.Value.Results;
+    }
+}
