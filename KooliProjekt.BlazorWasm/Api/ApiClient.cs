@@ -14,6 +14,17 @@ namespace KooliProjekt.BlazorWasm
             _client = new HttpClient();
         }
 
+        public async Task<OperationResult<Client>> Get(int id)
+        {
+            var url = _baseUrl + "Get?id=" + id;
+            using var request = new HttpRequestMessage(HttpMethod.Get, url);
+            using var response = await _client.SendAsync(request);
+            var body = await response.Content.ReadAsStringAsync();
+
+            var result = JsonConvert.DeserializeObject<OperationResult<Client>>(body);
+            return result;
+        }
+
         public async Task<OperationResult<PagedResult<Client>>> List(int page, int pageSize)
         {
             var url = _baseUrl + "?page=" + page + "&pageSize=" + pageSize;
